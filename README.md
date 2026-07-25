@@ -6,7 +6,7 @@ Inspect and safely run multi-Worker Cloudflare projects.
 [![CI](https://github.com/loke-dev/workers-doctor/actions/workflows/ci.yml/badge.svg)](https://github.com/loke-dev/workers-doctor/actions/workflows/ci.yml)
 [![MIT license](https://img.shields.io/badge/license-MIT-171816)](LICENSE)
 
-[Website](https://workers-doctor.loke.dev) · [GitHub Marketplace](https://github.com/marketplace/actions/workers-doctor) · [Report an issue](https://github.com/loke-dev/workers-doctor/issues)
+[Website](https://workers-doctor.loke.dev) · [GitHub Action](#github-actions) · [Report an issue](https://github.com/loke-dev/workers-doctor/issues)
 
 Workers Doctor turns a directory of Wrangler files into one understandable
 development plan. It resolves the selected environment, maps service and
@@ -100,4 +100,3 @@ pnpm site:dev
 ## License
 
 MIT
-
