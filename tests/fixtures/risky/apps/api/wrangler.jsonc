@@ -1,0 +1,32 @@
+{
+  "name": "risky-api",
+  "compatibility_date": "2026-07-25",
+  "secrets": {
+    "required": ["API_TOKEN", "MISSING_SECRET"]
+  },
+  "services": [
+    {
+      "binding": "MISSING",
+      "service": "not-in-this-stack"
+    },
+    {
+      "binding": "SELF",
+      "service": "risky-worker"
+    }
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "production",
+      "database_id": "production-id",
+      "remote": true
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "CACHE",
+      "id": "local-id"
+    }
+  ]
+}
+

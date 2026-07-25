@@ -1,0 +1,47 @@
+name: Workers Doctor
+description: Inspect Cloudflare Worker stacks, environments, and local or remote bindings.
+author: Loke
+
+branding:
+  icon: activity
+  color: orange
+
+inputs:
+  path:
+    description: Worker project or monorepo directory to inspect.
+    required: false
+    default: .
+  environment:
+    description: Named Workers environment to resolve.
+    required: false
+    default: ""
+  strict:
+    description: Fail when warnings are found.
+    required: false
+    default: "true"
+  version:
+    description: Workers Doctor npm version to run.
+    required: false
+    default: latest
+
+runs:
+  using: composite
+  steps:
+    - name: Run Workers Doctor
+      shell: bash
+      env:
+        WORKERS_DOCTOR_PATH: ${{ inputs.path }}
+        WORKERS_DOCTOR_ENVIRONMENT: ${{ inputs.environment }}
+        WORKERS_DOCTOR_STRICT: ${{ inputs.strict }}
+        WORKERS_DOCTOR_VERSION: ${{ inputs.version }}
+      run: |
+        set -euo pipefail
+        args=("inspect" "$WORKERS_DOCTOR_PATH" "--github")
+        if [[ -n "$WORKERS_DOCTOR_ENVIRONMENT" ]]; then
+          args+=("--env" "$WORKERS_DOCTOR_ENVIRONMENT")
+        fi
+        if [[ "$WORKERS_DOCTOR_STRICT" == "true" ]]; then
+          args+=("--strict")
+        fi
+        npx --yes "workers-doctor@${WORKERS_DOCTOR_VERSION}" "${args[@]}"
+

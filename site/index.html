@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Workers Doctor maps Cloudflare Worker stacks, resolves environments, exposes local and remote bindings, and starts development only after the plan is clear."
+    />
+    <meta name="theme-color" content="#0b1413" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta property="og:title" content="Workers Doctor · See the stack before you run it" />
+    <meta
+      property="og:description"
+      content="Open-source diagnostics and guarded local development for multi-Worker Cloudflare projects."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://workers-doctor.loke.dev/" />
+    <meta property="og:site_name" content="Workers Doctor" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="canonical" href="https://workers-doctor.loke.dev/" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/styles.css" />
+    <title>Workers Doctor · Multi-Worker Cloudflare development</title>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Workers Doctor",
+        "url": "https://workers-doctor.loke.dev/",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Linux, macOS, Windows",
+        "description": "An open-source CLI for inspecting and safely running multi-Worker Cloudflare projects.",
+        "softwareVersion": "0.1.0",
+        "license": "https://opensource.org/license/mit",
+        "codeRepository": "https://github.com/loke-dev/workers-doctor",
+        "author": {
+          "@type": "Person",
+          "name": "Loke",
+          "url": "https://loke.dev/"
+        },
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#content">Skip to content</a>
+    <div class="grid-field" aria-hidden="true"></div>
+
+    <header>
+      <a class="brand" href="/" aria-label="Workers Doctor home">
+        <svg viewBox="0 0 42 42" aria-hidden="true">
+          <path d="M6 12h30M6 21h30M6 30h30" />
+          <circle cx="14" cy="12" r="3" />
+          <circle cx="29" cy="21" r="3" />
+          <circle cx="19" cy="30" r="3" />
+        </svg>
+        <span>WORKERS DOCTOR</span>
+      </a>
+      <nav aria-label="Primary">
+        <a href="#diagnostics">Diagnostics</a>
+        <a href="#workflow">Workflow</a>
+        <a href="https://github.com/loke-dev/workers-doctor">GitHub ↗</a>
+      </nav>
+    </header>
+
+    <main id="content">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Cloudflare Workers / stack diagnostics</p>
+          <h1>See every binding.<br /><em>Then press run.</em></h1>
+          <p class="lede">
+            Workers Doctor resolves your selected environment, maps the Worker
+            graph, and shows exactly which resources stay local or reach Cloudflare.
+          </p>
+          <div class="actions">
+            <button class="command" data-copy="npx workers-doctor" type="button">
+              <span>$</span>
+              <code>npx workers-doctor</code>
+              <b data-copy-label>COPY</b>
+            </button>
+            <a class="link" href="https://github.com/marketplace/actions/workers-doctor">
+              Add to CI ↗
+            </a>
+          </div>
+          <dl class="facts">
+            <div><dt>00</dt><dd>credentials</dd></div>
+            <div><dt>03</dt><dd>config formats</dd></div>
+            <div><dt>07</dt><dd>diagnostics</dd></div>
+          </dl>
+        </div>
+
+        <div class="stack-card" aria-label="Example Worker dependency graph">
+          <div class="stack-head">
+            <span>STACK / STAGING</span>
+            <span class="healthy">READY</span>
+          </div>
+          <div class="map">
+            <article class="node node-api">
+              <small>WORKER</small><strong>api-staging</strong>
+              <span>localhost:8787</span>
+            </article>
+            <article class="node node-auth">
+              <small>WORKER</small><strong>auth-staging</strong>
+              <span>localhost:8788</span>
+            </article>
+            <article class="node node-db remote">
+              <small>D1 / REMOTE</small><strong>preview-db</strong>
+              <span>Cloudflare</span>
+            </article>
+            <svg viewBox="0 0 600 350" aria-hidden="true">
+              <path d="M260 95 C350 95 340 240 430 240" />
+              <path class="dashed" d="M250 125 C275 210 240 255 215 275" />
+            </svg>
+          </div>
+          <div class="stack-foot">
+            <span><i class="local-dot"></i> local process</span>
+            <span><i class="remote-dot"></i> remote resource</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="problem">
+        <p class="section-number">01 / EFFECTIVE STATE</p>
+        <div>
+          <h2>A Wrangler file is not the stack that runs.</h2>
+          <p>
+            Named environments replace non-inherited bindings. Remote flags move
+            individual resources back to Cloudflare. Service names change across
+            environments. Workers Doctor computes the result before a development
+            process touches anything.
+          </p>
+        </div>
+      </section>
+
+      <section class="terminal-section" id="diagnostics">
+        <div>
+          <p class="section-number">02 / INSPECTION</p>
+          <h2>One plan for the whole repository.</h2>
+          <p>
+            Scan JSONC, JSON, or TOML. Keep the readable report in the terminal,
+            emit JSON for tooling, Graphviz for architecture, or annotations for CI.
+          </p>
+        </div>
+        <div class="terminal">
+          <div class="terminal-bar"><span></span><span></span><span></span><b>workers-doctor</b></div>
+          <pre><code><i>$</i> workers-doctor inspect -e staging
+
+<b>2 workers · 3 bindings · 1 remote</b>
+
+api-staging
+  service  AUTH → auth-staging   <mark>local</mark>
+  d1       DB → preview-db       <strong>remote</strong>
+
+auth-staging
+  kv       SESSIONS              <mark>local</mark>
+
+<strong>i WD002</strong> Remote bindings will be used
+<em>! WD003</em> Local and remote state are mixed</code></pre>
+        </div>
+      </section>
+
+      <section class="workflow" id="workflow">
+        <p class="section-number">03 / GUARDED START</p>
+        <h2>The command is visible before the process begins.</h2>
+        <ol>
+          <li><span>01</span><div><h3>Discover</h3><p>Find every Worker without walking generated directories.</p></div></li>
+          <li><span>02</span><div><h3>Resolve</h3><p>Apply the selected environment and classify each binding.</p></div></li>
+          <li><span>03</span><div><h3>Verify</h3><p>Stop on missing environments and show every warning.</p></div></li>
+          <li><span>04</span><div><h3>Start</h3><p>Launch dependencies first on predictable local ports.</p></div></li>
+        </ol>
+      </section>
+
+      <section class="cta">
+        <p class="eyebrow">Open source / deterministic / offline inspection</p>
+        <h2>Make the invisible stack inspectable.</h2>
+        <button class="command light" data-copy="npx workers-doctor" type="button">
+          <span>$</span><code>npx workers-doctor</code><b data-copy-label>COPY</b>
+        </button>
+      </section>
+    </main>
+
+    <footer>
+      <a class="brand" href="/"><span>WORKERS DOCTOR</span></a>
+      <p>Built by <a href="https://loke.dev">Loke</a>. MIT licensed.</p>
+      <a href="https://github.com/loke-dev/workers-doctor">Source ↗</a>
+    </footer>
+
+    <script type="module" src="/main.js"></script>
+  </body>
+</html>
+

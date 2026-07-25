@@ -1,0 +1,30 @@
+{
+  "name": "doctor-api",
+  "compatibility_date": "2026-07-25",
+  "services": [
+    {
+      "binding": "AUTH",
+      "service": "doctor-auth-staging"
+    }
+  ],
+  "env": {
+    "staging": {
+      "name": "doctor-api-staging",
+      "services": [
+        {
+          "binding": "AUTH",
+          "service": "doctor-auth-staging"
+        }
+      ],
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "doctor-preview",
+          "database_id": "preview-id",
+          "remote": true
+        }
+      ]
+    }
+  }
+}
+

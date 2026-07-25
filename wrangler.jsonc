@@ -1,0 +1,20 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "workers-doctor",
+  "compatibility_date": "2026-07-25",
+  "routes": [
+    {
+      "pattern": "workers-doctor.loke.dev",
+      "custom_domain": true
+    }
+  ],
+  "assets": {
+    "directory": "./site/dist",
+    "not_found_handling": "404-page"
+  },
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 0.1
+  }
+}
+

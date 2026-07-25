@@ -1,0 +1,16 @@
+{
+  "name": "doctor-auth",
+  "compatibility_date": "2026-07-25",
+  "env": {
+    "staging": {
+      "name": "doctor-auth-staging",
+      "kv_namespaces": [
+        {
+          "binding": "SESSIONS",
+          "id": "local-id"
+        }
+      ]
+    }
+  }
+}
+
