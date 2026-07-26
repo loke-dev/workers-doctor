@@ -1741,14 +1741,18 @@ import { readdir, stat } from "fs/promises";
 import { basename, resolve } from "path";
 var CONFIG_NAMES = /* @__PURE__ */ new Set(["wrangler.jsonc", "wrangler.json", "wrangler.toml"]);
 var SKIP_DIRECTORIES = /* @__PURE__ */ new Set([
+  ".astro",
   ".git",
+  ".next",
+  ".nuxt",
+  ".output",
+  ".svelte-kit",
+  ".vercel",
   ".wrangler",
   "build",
   "coverage",
   "dist",
-  "node_modules",
-  ".next",
-  ".output"
+  "node_modules"
 ]);
 async function discoverConfigs(inputPath, recursive) {
   const absolute = resolve(inputPath);
