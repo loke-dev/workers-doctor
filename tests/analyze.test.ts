@@ -1,5 +1,7 @@
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
-import { resolve } from 'node:path'
+import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { inspectStack, relativeResult } from '../src/analyze.js'
 
@@ -32,16 +34,34 @@ describe('inspectStack', () => {
   })
 
   it('reports secret, service, cycle, and mixed-state problems', async () => {
-    const result = await inspectStack(`${fixtures}/risky`, { recursive: true })
-    const rules = result.diagnostics.map((item) => item.rule)
+    const temporary = await mkdtemp(join(tmpdir(), 'workers-doctor-risky-'))
+    try {
+      await mkdir(join(temporary, 'apps/api'), { recursive: true })
+      await mkdir(join(temporary, 'apps/worker'), { recursive: true })
+      await writeFile(
+        join(temporary, 'apps/api/wrangler.jsonc'),
+        await readFile(`${fixtures}/risky/apps/api/wrangler.jsonc`, 'utf8'),
+      )
+      await writeFile(
+        join(temporary, 'apps/worker/wrangler.toml'),
+        await readFile(`${fixtures}/risky/apps/worker/wrangler.toml`, 'utf8'),
+      )
+      await writeFile(join(temporary, 'apps/api/.dev.vars'), 'UNRELATED_NAME=\n')
+      await writeFile(join(temporary, 'apps/api/.env'), 'ANOTHER_NAME=\n')
 
-    expect(rules).toContain('WD002')
-    expect(rules).toContain('WD003')
-    expect(rules).toContain('WD004')
-    expect(rules).toContain('WD005')
-    expect(rules).toContain('WD006')
-    expect(rules).toContain('WD007')
-    expect(result.diagnostics.filter((item) => item.rule === 'WD007')).toHaveLength(1)
+      const result = await inspectStack(temporary, { recursive: true })
+      const rules = result.diagnostics.map((item) => item.rule)
+
+      expect(rules).toContain('WD002')
+      expect(rules).toContain('WD003')
+      expect(rules).toContain('WD004')
+      expect(rules).toContain('WD005')
+      expect(rules).toContain('WD006')
+      expect(rules).toContain('WD007')
+      expect(result.diagnostics.filter((item) => item.rule === 'WD007')).toHaveLength(1)
+    } finally {
+      await rm(temporary, { recursive: true })
+    }
   })
 
   it('reports an absent selected environment', async () => {
