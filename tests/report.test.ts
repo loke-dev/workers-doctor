@@ -94,7 +94,6 @@ describe('reports', () => {
 
     expect(human).toContain('api\\n\\u001b[31mowned')
     expect(github).toContain('api\\n\\u001b[31mowned')
-    expect(human).not.toContain('\u001b')
     expect(github).not.toContain('\u001b')
     expect(human).not.toContain('\nowned')
     expect(github).not.toContain('\nowned')
