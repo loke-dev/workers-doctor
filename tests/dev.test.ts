@@ -7,6 +7,20 @@ describe('runDevCommands', () => {
     await expect(runDevCommands([])).resolves.toBe(0)
   })
 
+  it('fails when a managed process is terminated by a signal', async () => {
+    await expect(
+      runDevCommands([
+        {
+          worker: 'signal-test',
+          cwd: process.cwd(),
+          command: process.execPath,
+          args: ['-e', "process.kill(process.pid, 'SIGTERM')"],
+          port: 8787,
+        },
+      ]),
+    ).resolves.toBe(1)
+  })
+
   it('rejects a generated port range above 65535', async () => {
     const worker = (name: string): StackResult['workers'][number] => ({
       configPath: `/tmp/${name}/wrangler.jsonc`,

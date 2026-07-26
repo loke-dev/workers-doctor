@@ -148,10 +148,11 @@ export async function runDevCommands(commands: DevCommand[]): Promise<number> {
         exitCode = 1
         stop()
       })
-      child.once('close', (code) => {
+      child.once('close', (code, signal) => {
         if (typeof code === 'number' && code !== 0) exitCode = code
+        else if (signal && exitCode === 0) exitCode = 1
         remaining -= 1
-        if (!closing && code !== 0) stop()
+        if (!closing && (code !== 0 || signal)) stop()
         finish()
       })
     }
