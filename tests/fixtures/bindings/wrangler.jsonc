@@ -2,6 +2,18 @@
   "name": "binding-surface",
   "main": "src/index.ts",
   "compatibility_date": "2026-07-26",
+  "vars": {
+    "API_ORIGIN": "https://example.com"
+  },
+  "wasm_modules": {
+    "PARSER": "./parser.wasm"
+  },
+  "text_blobs": {
+    "COPY": "./copy.txt"
+  },
+  "data_blobs": {
+    "LOOKUP": "./lookup.bin"
+  },
   "agent_memory": [
     {
       "binding": "MEMORY",

@@ -188,14 +188,46 @@ describe('inspectStack', () => {
       'agent-memory',
       'ai-search',
       'assets',
+      'data-blob',
       'log-forwarder',
       'pipeline',
       'stream',
+      'text-blob',
       'unsafe',
+      'var',
       'version-metadata',
       'vpc-service',
+      'wasm-module',
     ])
-    expect(result.summary.remoteBindings).toBe(4)
+    expect(result.summary).toMatchObject({ bindings: 13, remoteBindings: 4 })
+  })
+
+  it('does not treat variables and modules as local resource state', async () => {
+    const temporary = await mkdtemp(join(tmpdir(), 'workers-doctor-object-bindings-'))
+    try {
+      await writeFile(
+        join(temporary, 'wrangler.json'),
+        JSON.stringify({
+          name: 'object-bindings',
+          vars: { API_ORIGIN: 'https://example.com' },
+          wasm_modules: { PARSER: './parser.wasm' },
+          text_blobs: { COPY: './copy.txt' },
+          data_blobs: { LOOKUP: './lookup.bin' },
+          kv_namespaces: [{ binding: 'CACHE', id: 'remote-id', remote: true }],
+        }),
+      )
+
+      const result = await inspectStack(temporary, { recursive: true })
+
+      expect(result.diagnostics).toContainEqual(
+        expect.objectContaining({ rule: 'WD002' }),
+      )
+      expect(result.diagnostics).not.toContainEqual(
+        expect.objectContaining({ rule: 'WD003' }),
+      )
+    } finally {
+      await rm(temporary, { recursive: true })
+    }
   })
 
   it('blocks duplicate Worker and binding names and reports self-cycles', async () => {
@@ -205,8 +237,8 @@ describe('inspectStack', () => {
       await mkdir(join(temporary, 'other'), { recursive: true })
       const config = JSON.stringify({
         name: 'duplicate',
+        vars: { COLLISION: 'plain-text-value' },
         services: [{ binding: 'COLLISION', service: 'duplicate' }],
-        kv_namespaces: [{ binding: 'COLLISION', id: 'local-id' }],
       })
       await writeFile(join(temporary, 'api/wrangler.json'), config)
       await writeFile(join(temporary, 'other/wrangler.json'), config)
@@ -217,7 +249,11 @@ describe('inspectStack', () => {
         expect.objectContaining({ rule: 'WD008', severity: 'error' }),
       )
       expect(result.diagnostics).toContainEqual(
-        expect.objectContaining({ rule: 'WD009', severity: 'error' }),
+        expect.objectContaining({
+          rule: 'WD009',
+          severity: 'error',
+          message: expect.stringContaining('2 bindings named COLLISION'),
+        }),
       )
       expect(result.diagnostics).toContainEqual(
         expect.objectContaining({ rule: 'WD007', message: 'duplicate -> duplicate' }),

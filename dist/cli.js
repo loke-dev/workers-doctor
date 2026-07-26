@@ -1804,6 +1804,16 @@ var ARRAY_BINDINGS = [
   { key: "vpc_networks", type: "vpc-network", name: "binding" },
   { key: "worker_loaders", type: "worker-loader", name: "binding" }
 ];
+var OBJECT_BINDINGS = [
+  { key: "vars", type: "var" },
+  { key: "wasm_modules", type: "wasm-module" },
+  { key: "text_blobs", type: "text-blob" },
+  { key: "data_blobs", type: "data-blob" }
+];
+var NON_STATE_BINDINGS = /* @__PURE__ */ new Set([
+  "service",
+  ...OBJECT_BINDINGS.map((binding) => binding.type)
+]);
 async function inspectStack(inputPath, options) {
   const input = resolve2(inputPath);
   let inputInfo;
@@ -1945,7 +1955,9 @@ async function projectFromConfig(configPath, root, environment, diagnostics) {
       fix: "Use staging resources or pass --local to Wrangler when remote access is not intended."
     });
   }
-  const localCount = bindings.filter((binding) => !binding.remote && binding.type !== "service").length;
+  const localCount = bindings.filter(
+    (binding) => !binding.remote && !NON_STATE_BINDINGS.has(binding.type)
+  ).length;
   if (remote.length > 0 && localCount > 0) {
     diagnostics.push({
       rule: "WD003",
@@ -1971,6 +1983,13 @@ async function projectFromConfig(configPath, root, environment, diagnostics) {
 }
 function collectBindings(config) {
   const bindings = [];
+  for (const descriptor of OBJECT_BINDINGS) {
+    const entries = objectAt(config, descriptor.key);
+    if (!entries) continue;
+    for (const name of Object.keys(entries)) {
+      if (name) bindings.push({ type: descriptor.type, name, remote: false });
+    }
+  }
   for (const descriptor of ARRAY_BINDINGS) {
     for (const item of arrayAt(config, descriptor.key)) {
       const name = stringAt(item, descriptor.name);
