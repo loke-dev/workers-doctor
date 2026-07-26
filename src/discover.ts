@@ -1,5 +1,6 @@
 import { readdir, stat } from 'node:fs/promises'
 import { basename, resolve } from 'node:path'
+import { ConfigError } from './config.js'
 
 const CONFIG_NAMES = new Set(['wrangler.jsonc', 'wrangler.json', 'wrangler.toml'])
 const SKIP_DIRECTORIES = new Set([
@@ -22,7 +23,10 @@ export async function discoverConfigs(inputPath: string, recursive: boolean): Pr
   const info = await stat(absolute)
   if (info.isFile()) {
     if (!CONFIG_NAMES.has(basename(absolute))) {
-      throw new Error(`${absolute} is not a Wrangler configuration file.`)
+      throw new ConfigError(
+        `${absolute} is not a Wrangler configuration file.`,
+        absolute,
+      )
     }
     return [absolute]
   }

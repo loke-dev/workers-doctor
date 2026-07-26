@@ -12,9 +12,17 @@ describe('inspectStack', () => {
   it('classifies missing paths and empty scan roots as input errors', async () => {
     const temporary = await mkdtemp(join(tmpdir(), 'workers-doctor-empty-'))
     try {
+      const unrelatedFile = join(temporary, 'notes.txt')
+      await writeFile(unrelatedFile, 'not a Wrangler configuration')
       await expect(
         inspectStack(join(temporary, 'missing'), { recursive: true }),
       ).rejects.toBeInstanceOf(ConfigError)
+      await expect(
+        inspectStack(unrelatedFile, { recursive: true }),
+      ).rejects.toMatchObject({
+        filePath: unrelatedFile,
+        message: `${unrelatedFile} is not a Wrangler configuration file.`,
+      })
       await expect(
         inspectStack(temporary, { recursive: true }),
       ).rejects.toBeInstanceOf(ConfigError)

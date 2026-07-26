@@ -1765,7 +1765,10 @@ async function discoverConfigs(inputPath, recursive) {
   const info = await stat(absolute);
   if (info.isFile()) {
     if (!CONFIG_NAMES.has(basename(absolute))) {
-      throw new Error(`${absolute} is not a Wrangler configuration file.`);
+      throw new ConfigError(
+        `${absolute} is not a Wrangler configuration file.`,
+        absolute
+      );
     }
     return [absolute];
   }
