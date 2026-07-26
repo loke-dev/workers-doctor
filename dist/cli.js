@@ -1806,11 +1806,19 @@ var ARRAY_BINDINGS = [
 ];
 async function inspectStack(inputPath, options) {
   const input = resolve2(inputPath);
-  const inputInfo = await stat2(input);
+  let inputInfo;
+  try {
+    inputInfo = await stat2(input);
+  } catch (error) {
+    if (isMissingPathError(error)) {
+      throw new ConfigError(`Path does not exist: ${input}`, input);
+    }
+    throw error;
+  }
   const root = inputInfo.isFile() ? dirname(input) : input;
   const configPaths = await discoverConfigs(input, options.recursive);
   if (configPaths.length === 0) {
-    throw new Error(`No Wrangler configuration found below ${root}.`);
+    throw new ConfigError(`No Wrangler configuration found below ${root}.`, root);
   }
   const diagnostics = [];
   const workers = [];
@@ -1845,6 +1853,9 @@ async function inspectStack(inputPath, options) {
       infos: diagnostics.filter((item) => item.severity === "info").length
     }
   };
+}
+function isMissingPathError(error) {
+  return error instanceof Error && "code" in error && error.code === "ENOENT";
 }
 function diagnoseDuplicateNames(workers) {
   const counts = /* @__PURE__ */ new Map();

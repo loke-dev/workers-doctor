@@ -4,10 +4,25 @@ import { fileURLToPath } from 'node:url'
 import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { inspectStack, relativeResult } from '../src/analyze.js'
+import { ConfigError } from '../src/config.js'
 
 const fixtures = fileURLToPath(new URL('./fixtures/', import.meta.url))
 
 describe('inspectStack', () => {
+  it('classifies missing paths and empty scan roots as input errors', async () => {
+    const temporary = await mkdtemp(join(tmpdir(), 'workers-doctor-empty-'))
+    try {
+      await expect(
+        inspectStack(join(temporary, 'missing'), { recursive: true }),
+      ).rejects.toBeInstanceOf(ConfigError)
+      await expect(
+        inspectStack(temporary, { recursive: true }),
+      ).rejects.toBeInstanceOf(ConfigError)
+    } finally {
+      await rm(temporary, { recursive: true })
+    }
+  })
+
   it('resolves a healthy named environment and service graph', async () => {
     const result = await inspectStack(`${fixtures}/healthy`, {
       recursive: true,

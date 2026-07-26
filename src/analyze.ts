@@ -3,6 +3,7 @@ import { basename, dirname, relative, resolve } from 'node:path'
 import {
   arrayAt,
   booleanAt,
+  ConfigError,
   isObject,
   objectAt,
   readConfig,
@@ -54,11 +55,19 @@ export async function inspectStack(
   options: InspectOptions,
 ): Promise<StackResult> {
   const input = resolve(inputPath)
-  const inputInfo = await stat(input)
+  let inputInfo
+  try {
+    inputInfo = await stat(input)
+  } catch (error) {
+    if (isMissingPathError(error)) {
+      throw new ConfigError(`Path does not exist: ${input}`, input)
+    }
+    throw error
+  }
   const root = inputInfo.isFile() ? dirname(input) : input
   const configPaths = await discoverConfigs(input, options.recursive)
   if (configPaths.length === 0) {
-    throw new Error(`No Wrangler configuration found below ${root}.`)
+    throw new ConfigError(`No Wrangler configuration found below ${root}.`, root)
   }
 
   const diagnostics: Diagnostic[] = []
@@ -98,6 +107,12 @@ export async function inspectStack(
       infos: diagnostics.filter((item) => item.severity === 'info').length,
     },
   }
+}
+
+function isMissingPathError(error: unknown): boolean {
+  return error instanceof Error
+    && 'code' in error
+    && error.code === 'ENOENT'
 }
 
 function diagnoseDuplicateNames(workers: WorkerProject[]): Diagnostic[] {
