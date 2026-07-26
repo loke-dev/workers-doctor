@@ -4,6 +4,7 @@ Inspect and safely run multi-Worker Cloudflare projects.
 
 [![npm version](https://img.shields.io/npm/v/workers-doctor?color=0f766e)](https://www.npmjs.com/package/workers-doctor)
 [![CI](https://github.com/loke-dev/workers-doctor/actions/workflows/ci.yml/badge.svg)](https://github.com/loke-dev/workers-doctor/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/loke-dev/workers-doctor/actions/workflows/codeql.yml/badge.svg)](https://github.com/loke-dev/workers-doctor/actions/workflows/codeql.yml)
 [![MIT license](https://img.shields.io/badge/license-MIT-171816)](LICENSE)
 
 [Website](https://workers-doctor.loke.dev) · [GitHub Action](#github-actions) · [Report an issue](https://github.com/loke-dev/workers-doctor/issues)
@@ -63,8 +64,8 @@ It does not deploy, create resources, or call the Cloudflare API.
 ## GitHub Actions
 
 ```yaml
-- uses: actions/checkout@v7
-- uses: loke-dev/workers-doctor@v0.1.4
+- uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+- uses: loke-dev/workers-doctor@v0.1.5
   with:
     environment: staging
 ```

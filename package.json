@@ -1,6 +1,6 @@
 {
   "name": "workers-doctor",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Inspect and safely run multi-Worker Cloudflare projects.",
   "type": "module",
   "bin": {
