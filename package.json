@@ -12,8 +12,8 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsup src/cli.ts --format esm --clean --dts",
-    "check": "tsc --noEmit && vitest run && tsup src/cli.ts --format esm --clean --dts && vite build --config site/vite.config.ts",
+    "build": "tsup",
+    "check": "tsc --noEmit && vitest run && tsup && vite build --config site/vite.config.ts",
     "dev": "tsx src/cli.ts",
     "site:dev": "vite --config site/vite.config.ts",
     "site:build": "vite build --config site/vite.config.ts",
@@ -22,7 +22,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
-    "prepare": "tsup src/cli.ts --format esm --clean --dts"
+    "prepare": "tsup"
   },
   "keywords": [
     "cloudflare",
