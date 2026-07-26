@@ -2402,6 +2402,13 @@ function parseArgs(args) {
       }
       startPort = value;
       portSpecified = true;
+    } else if (argument === "-p") {
+      const value = Number(requiredValue(values, ++index, argument));
+      if (!Number.isInteger(value) || value < 1 || value > 65535) {
+        throw new CliArgumentError("--port must be an integer between 1 and 65535.");
+      }
+      startPort = value;
+      portSpecified = true;
     } else if (argument.startsWith("-")) {
       throw new CliArgumentError(`Unknown option "${argument}".`);
     } else if (!positionalSeen) {
@@ -2620,7 +2627,7 @@ Options:
   --strict               Fail when warnings are found
   --no-recursive         Inspect only the selected directory
   --dry-run              Print the dev process plan without starting it
-  --port <number>        First local port for dev mode (default: 8787)
+  -p, --port <number>    First local port for dev mode (default: 8787)
   --no-color             Disable ANSI colors
   -v, --version
   -h, --help
