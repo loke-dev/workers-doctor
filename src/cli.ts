@@ -104,7 +104,7 @@ Options:
   --strict               Fail when warnings are found
   --no-recursive         Inspect only the selected directory
   --dry-run              Print the dev process plan without starting it
-  --port <number>        First local port for dev mode (default: 8787)
+  -p, --port <number>    First local port for dev mode (default: 8787)
   --no-color             Disable ANSI colors
   -v, --version
   -h, --help
