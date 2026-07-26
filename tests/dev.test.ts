@@ -21,6 +21,27 @@ describe('runDevCommands', () => {
     ).resolves.toBe(1)
   })
 
+  it('fails when a managed process exits cleanly before stack shutdown', async () => {
+    await expect(
+      runDevCommands([
+        {
+          worker: 'early-exit-test',
+          cwd: process.cwd(),
+          command: process.execPath,
+          args: ['-e', ''],
+          port: 8787,
+        },
+        {
+          worker: 'remaining-worker-test',
+          cwd: process.cwd(),
+          command: process.execPath,
+          args: ['-e', 'setTimeout(() => {}, 500)'],
+          port: 8788,
+        },
+      ]),
+    ).resolves.toBe(1)
+  })
+
   it('rejects a generated port range above 65535', async () => {
     const worker = (name: string): StackResult['workers'][number] => ({
       configPath: `/tmp/${name}/wrangler.jsonc`,

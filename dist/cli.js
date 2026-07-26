@@ -2264,10 +2264,13 @@ async function runDevCommands(commands) {
         stop();
       });
       child.once("close", (code, signal) => {
-        if (typeof code === "number" && code !== 0) exitCode = code;
-        else if (signal && exitCode === 0) exitCode = 1;
+        const unexpectedExit = !closing;
+        if (exitCode === 0) {
+          if (typeof code === "number" && code !== 0) exitCode = code;
+          else if (signal || unexpectedExit) exitCode = 1;
+        }
         remaining -= 1;
-        if (!closing && (code !== 0 || signal)) stop();
+        if (unexpectedExit) stop();
         finish();
       });
     }
