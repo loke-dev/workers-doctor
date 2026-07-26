@@ -2049,8 +2049,8 @@ async function inspectSecretFiles(directory, environment, required) {
     }
   }
   return {
-    hasDevVars: names.some((name) => name === ".dev.vars" || name.startsWith(".dev.vars.")),
-    hasEnv: names.some((name) => name === ".env" || name.startsWith(".env.")),
+    hasDevVars: Boolean(devFile),
+    hasEnv: envFiles.length > 0,
     missing: required.filter((name) => !keys.has(name))
   };
 }

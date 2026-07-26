@@ -74,6 +74,37 @@ describe('inspectStack', () => {
     )
   })
 
+  it('ignores secret files for other environments when checking mixed systems', async () => {
+    const temporary = await mkdtemp(join(tmpdir(), 'workers-doctor-secrets-'))
+    try {
+      await writeFile(
+        join(temporary, 'wrangler.json'),
+        JSON.stringify({ name: 'multi-env', env: { staging: {} } }),
+      )
+      await writeFile(join(temporary, '.dev.vars.staging'), 'STAGING_SECRET=\n')
+      await writeFile(join(temporary, '.env.production'), 'PRODUCTION_SECRET=\n')
+
+      const staging = await inspectStack(temporary, {
+        recursive: true,
+        environment: 'staging',
+      })
+      expect(staging.diagnostics).not.toContainEqual(
+        expect.objectContaining({ rule: 'WD004' }),
+      )
+
+      await writeFile(join(temporary, '.env.staging'), 'STAGING_OTHER=\n')
+      const mixed = await inspectStack(temporary, {
+        recursive: true,
+        environment: 'staging',
+      })
+      expect(mixed.diagnostics).toContainEqual(
+        expect.objectContaining({ rule: 'WD004' }),
+      )
+    } finally {
+      await rm(temporary, { recursive: true })
+    }
+  })
+
   it('uses the configuration directory as root for a single file', async () => {
     const result = relativeResult(await inspectStack(
       `${fixtures}/healthy/apps/api/wrangler.jsonc`,
