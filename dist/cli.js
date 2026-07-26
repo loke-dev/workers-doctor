@@ -2227,16 +2227,23 @@ function formatDevPlan(commands) {
   return `${lines.join("\n")}
 `;
 }
-async function runDevCommands(commands) {
+async function runDevCommands(commands, shutdownGraceMs = 5e3) {
   if (commands.length === 0) return 0;
   const children = [];
   let closing = false;
   let exitCode = 0;
+  let forceTimer;
   const stop = (signalExitCode) => {
     if (signalExitCode !== void 0 && exitCode === 0) exitCode = signalExitCode;
     if (closing) return;
     closing = true;
     for (const child of children) child.kill("SIGTERM");
+    forceTimer = setTimeout(() => {
+      for (const child of children) {
+        if (child.exitCode === null && child.signalCode === null) child.kill("SIGKILL");
+      }
+    }, shutdownGraceMs);
+    forceTimer.unref();
   };
   const interrupt = () => stop(130);
   const terminate = () => stop(143);
@@ -2246,6 +2253,7 @@ async function runDevCommands(commands) {
     const finish = () => {
       if (resolved || remaining !== 0) return;
       resolved = true;
+      clearTimeout(forceTimer);
       process.removeListener("SIGINT", interrupt);
       process.removeListener("SIGTERM", terminate);
       resolve3(exitCode);

@@ -42,6 +42,32 @@ describe('runDevCommands', () => {
     ).resolves.toBe(1)
   })
 
+  it('force stops a managed process that ignores graceful shutdown', async () => {
+    const started = Date.now()
+    await expect(
+      runDevCommands(
+        [
+          {
+            worker: 'ignores-sigterm-test',
+            cwd: process.cwd(),
+            command: process.execPath,
+            args: ['-e', "process.on('SIGTERM', () => {}); setTimeout(() => {}, 10_000)"],
+            port: 8787,
+          },
+          {
+            worker: 'early-exit-test',
+            cwd: process.cwd(),
+            command: process.execPath,
+            args: ['-e', 'setTimeout(() => {}, 300)'],
+            port: 8788,
+          },
+        ],
+        100,
+      ),
+    ).resolves.toBe(1)
+    expect(Date.now() - started).toBeLessThan(2_000)
+  })
+
   it('rejects a generated port range above 65535', async () => {
     const worker = (name: string): StackResult['workers'][number] => ({
       configPath: `/tmp/${name}/wrangler.jsonc`,

@@ -106,18 +106,28 @@ export function formatDevPlan(commands: DevCommand[]): string {
   return `${lines.join('\n')}\n`
 }
 
-export async function runDevCommands(commands: DevCommand[]): Promise<number> {
+export async function runDevCommands(
+  commands: DevCommand[],
+  shutdownGraceMs = 5_000,
+): Promise<number> {
   if (commands.length === 0) return 0
 
   const children: ChildProcess[] = []
   let closing = false
   let exitCode = 0
+  let forceTimer: ReturnType<typeof setTimeout> | undefined
 
   const stop = (signalExitCode?: number): void => {
     if (signalExitCode !== undefined && exitCode === 0) exitCode = signalExitCode
     if (closing) return
     closing = true
     for (const child of children) child.kill('SIGTERM')
+    forceTimer = setTimeout(() => {
+      for (const child of children) {
+        if (child.exitCode === null && child.signalCode === null) child.kill('SIGKILL')
+      }
+    }, shutdownGraceMs)
+    forceTimer.unref()
   }
   const interrupt = (): void => stop(130)
   const terminate = (): void => stop(143)
@@ -129,6 +139,7 @@ export async function runDevCommands(commands: DevCommand[]): Promise<number> {
     const finish = (): void => {
       if (resolved || remaining !== 0) return
       resolved = true
+      clearTimeout(forceTimer)
       process.removeListener('SIGINT', interrupt)
       process.removeListener('SIGTERM', terminate)
       resolve(exitCode)

@@ -60,8 +60,9 @@ npx workers-doctor dev --env staging
 
 Workers Doctor uses the repository's lockfile to select pnpm, npm, Bun, or Yarn.
 It stops the remaining processes and exits nonzero if any managed Worker fails
-or is terminated unexpectedly. It does not deploy, create resources, or call
-the Cloudflare API.
+or is terminated unexpectedly. Processes that ignore graceful shutdown are
+force-stopped after a short grace period. Workers Doctor does not deploy, create
+resources, or call the Cloudflare API.
 
 ## GitHub Actions
 
