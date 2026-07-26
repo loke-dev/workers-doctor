@@ -51,8 +51,10 @@ jobs:
           environment: staging
           strict: invalid
       - name: Verify invalid Action input failed
-        if: always() && matrix.node == 24
-        run: test "${{ steps.invalid-strict.outcome }}" = "failure"
+        if: always() && matrix.node == 24 && steps.invalid-strict.outcome != 'failure'
+        run: |
+          echo "::error title=Invalid strict input check failed::Expected invalid strict Action input to fail."
+          exit 1
 
   npm-artifact:
     name: Node 20 npm artifact
