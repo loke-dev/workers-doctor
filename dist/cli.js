@@ -2485,7 +2485,12 @@ function formatDot(result) {
 `;
 }
 function dotEscape(value) {
-  return value.replaceAll("\\", "\\\\").replaceAll('"', '\\"');
+  return value.replaceAll("\\", "\\\\").replaceAll('"', '\\"').replace(/[\u0000-\u001f\u007f]/g, (character) => {
+    if (character === "\n") return "\\n";
+    if (character === "\r") return "\\r";
+    if (character === "	") return "\\t";
+    return "";
+  });
 }
 
 // src/cli.ts

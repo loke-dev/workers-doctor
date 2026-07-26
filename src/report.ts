@@ -87,6 +87,13 @@ export function formatDot(result: StackResult): string {
 }
 
 function dotEscape(value: string): string {
-  return value.replaceAll('\\', '\\\\').replaceAll('"', '\\"')
+  return value
+    .replaceAll('\\', '\\\\')
+    .replaceAll('"', '\\"')
+    .replace(/[\u0000-\u001f\u007f]/g, (character) => {
+      if (character === '\n') return '\\n'
+      if (character === '\r') return '\\r'
+      if (character === '\t') return '\\t'
+      return ''
+    })
 }
-

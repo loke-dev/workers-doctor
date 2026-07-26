@@ -48,5 +48,30 @@ describe('reports', () => {
   it('renders a dot graph', () => {
     expect(formatDot(result)).toContain('"api" -> "auth"')
   })
-})
 
+  it('keeps control characters inside escaped dot labels', () => {
+    const unsafeName = 'api"\nmalicious [label="owned"]'
+    const unsafeResult: StackResult = {
+      ...result,
+      workers: result.workers.map((worker) => ({
+        ...worker,
+        name: unsafeName,
+      })),
+      edges: [
+        {
+          from: unsafeName,
+          to: 'auth',
+          label: 'service:\tAUTH',
+          remote: false,
+        },
+      ],
+    }
+
+    const output = formatDot(unsafeResult)
+    expect(output).toContain(
+      '"api\\"\\nmalicious [label=\\"owned\\"]" [label="api\\"\\nmalicious [label=\\"owned\\"]"];',
+    )
+    expect(output).toContain('label="service:\\tAUTH"')
+    expect(output).not.toContain('\nmalicious')
+  })
+})
