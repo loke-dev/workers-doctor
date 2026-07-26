@@ -4,6 +4,7 @@
   color-scheme: dark;
   --ink: #dff9f4;
   --muted: #91aca7;
+  --muted-on-light: #4f716b;
   --night: #07100f;
   --panel: #0b1715;
   --line: #1b3732;
@@ -91,6 +92,7 @@ h1 em { color: var(--amber); font-style: normal; font-weight: 400; }
 .terminal-section { display: grid; grid-template-columns: .75fr 1.25fr; gap: 90px; align-items: center; padding: 120px 6vw; margin-inline: calc(50% - 50vw); background: #dff3ee; color: #10201d; }
 .terminal-section > div:first-child { max-width: 520px; justify-self: end; }
 .terminal-section .section-number { color: #17675b; }
+.terminal-section > div > p:not(.section-number) { color: var(--muted-on-light); }
 .terminal { width: min(720px, 100%); background: #08110f; color: #dff9f4; box-shadow: 0 35px 70px rgba(18,50,44,.2); }
 .terminal-bar { height: 48px; display: flex; align-items: center; gap: 7px; padding: 0 16px; border-bottom: 1px solid #1c3833; }
 .terminal-bar span { width: 9px; height: 9px; border-radius: 50%; background: #31524c; }
@@ -148,4 +150,3 @@ footer p { margin: 0; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
 }
-
