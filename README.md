@@ -64,7 +64,7 @@ It does not deploy, create resources, or call the Cloudflare API.
 
 ```yaml
 - uses: actions/checkout@v7
-- uses: loke-dev/workers-doctor@v0.1.2
+- uses: loke-dev/workers-doctor@v0.1.3
   with:
     environment: staging
 ```
@@ -85,6 +85,7 @@ from the selected repository tag without downloading executable code from npm.
 | `WD006` | Service binding targets resolve inside the scanned stack |
 | `WD007` | Service binding cycles, including self-cycles, are visible |
 | `WD008` | Effective Worker names are unique inside the scanned stack |
+| `WD009` | Binding names are unique inside each Worker |
 
 Secret values are never reported. `inspect`, `graph`, and CI output are fully
 offline and require no Cloudflare account.

@@ -1815,6 +1815,7 @@ async function inspectStack(inputPath, options) {
     workers.push(await projectFromConfig(configPath, config, options.environment, diagnostics));
   }
   diagnostics.push(...diagnoseDuplicateNames(workers));
+  diagnostics.push(...diagnoseDuplicateBindings(workers));
   const edges = buildEdges(workers);
   diagnostics.push(...diagnoseServices(workers, edges));
   diagnostics.push(...diagnoseCycles(edges, workers));
@@ -1855,6 +1856,23 @@ function diagnoseDuplicateNames(workers) {
       worker: name,
       fix: "Give every Worker a unique effective name in the selected environment."
     };
+  });
+}
+function diagnoseDuplicateBindings(workers) {
+  return workers.flatMap((worker) => {
+    const counts = /* @__PURE__ */ new Map();
+    for (const binding of worker.bindings) {
+      counts.set(binding.name, (counts.get(binding.name) ?? 0) + 1);
+    }
+    return [...counts.entries()].filter(([, count]) => count > 1).map(([name, count]) => ({
+      rule: "WD009",
+      severity: "error",
+      title: "Binding name is duplicated",
+      message: `${worker.name} declares ${count} bindings named ${name}, so the runtime binding is ambiguous.`,
+      file: worker.configPath,
+      worker: worker.name,
+      fix: "Give every binding in this Worker a unique name."
+    }));
   });
 }
 async function projectFromConfig(configPath, root, environment, diagnostics) {
@@ -1985,6 +2003,7 @@ function collectBindings(config) {
     { key: "browser", type: "browser" },
     { key: "images", type: "images" },
     { key: "media", type: "media" },
+    { key: "stream", type: "stream" },
     { key: "version_metadata", type: "version-metadata" },
     { key: "websearch", type: "web-search" }
   ]) {
@@ -1992,6 +2011,20 @@ function collectBindings(config) {
     if (!item) continue;
     const name = stringAt(item, "binding");
     if (name) bindings.push({ type: descriptor.type, name, remote: booleanAt(item, "remote") });
+  }
+  const logForwarder = objectAt(config, "logfwdr");
+  if (logForwarder) {
+    for (const item of arrayAt(logForwarder, "bindings")) {
+      const name = stringAt(item, "name");
+      if (name) bindings.push({ type: "log-forwarder", name, remote: false });
+    }
+  }
+  const unsafe = objectAt(config, "unsafe");
+  if (unsafe) {
+    for (const item of arrayAt(unsafe, "bindings")) {
+      const name = stringAt(item, "name");
+      if (name) bindings.push({ type: "unsafe", name, remote: false });
+    }
   }
   return bindings.sort((a, b) => a.type.localeCompare(b.type) || a.name.localeCompare(b.name));
 }
