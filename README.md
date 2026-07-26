@@ -98,6 +98,8 @@ Secret values are never reported. `inspect`, `graph`, and CI output are fully
 offline and require no Cloudflare account. Secret-file checks consider only the
 files Wrangler selects for the requested environment. Parse failures omit TOML
 source excerpts so malformed configuration values cannot enter diagnostics.
+Human and GitHub reports render configuration control characters visibly so
+Worker and binding names cannot inject terminal or workflow-command output.
 
 ## Development
 

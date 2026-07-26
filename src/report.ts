@@ -8,18 +8,24 @@ export function formatHuman(result: StackResult, color = true): string {
   lines.push(
     `${result.summary.workers} worker${result.summary.workers === 1 ? '' : 's'} · ${result.summary.bindings} bindings · ${result.summary.remoteBindings} remote`,
   )
-  if (result.environment) lines.push(`Environment: ${pc.cyan(result.environment)}`)
+  if (result.environment) {
+    lines.push(`Environment: ${pc.cyan(terminalText(result.environment))}`)
+  }
   lines.push('')
 
   for (const worker of result.workers) {
-    lines.push(`${pc.bold(worker.name)}  ${pc.dim(worker.configPath)}`)
+    lines.push(
+      `${pc.bold(terminalText(worker.name))}  ${pc.dim(terminalText(worker.configPath))}`,
+    )
     if (worker.bindings.length === 0) {
       lines.push(`  ${pc.dim('no bindings')}`)
     } else {
       for (const binding of worker.bindings) {
-        const target = binding.target ? ` → ${binding.target}` : ''
+        const target = binding.target ? ` → ${terminalText(binding.target)}` : ''
         const mode = binding.remote ? pc.yellow('remote') : pc.dim('local')
-        lines.push(`  ${binding.type.padEnd(16)} ${binding.name}${target}  ${mode}`)
+        lines.push(
+          `  ${terminalText(binding.type).padEnd(16)} ${terminalText(binding.name)}${target}  ${mode}`,
+        )
       }
     }
     lines.push('')
@@ -47,8 +53,11 @@ function formatDiagnostic(item: Diagnostic): string {
       : item.severity === 'warning'
         ? pc.yellow('! WARNING')
         : pc.cyan('i NOTICE')
-  const lines = [`${icon} ${item.rule}  ${pc.bold(item.title)}`, `  ${item.message}`]
-  if (item.fix) lines.push(`  ${pc.dim(`Fix: ${item.fix}`)}`)
+  const lines = [
+    `${icon} ${item.rule}  ${pc.bold(terminalText(item.title))}`,
+    `  ${terminalText(item.message)}`,
+  ]
+  if (item.fix) lines.push(`  ${pc.dim(`Fix: ${terminalText(item.fix)}`)}`)
   return lines.join('\n')
 }
 
@@ -63,7 +72,7 @@ export function formatGitHub(result: StackResult): string {
 }
 
 function escape(value: string): string {
-  return value
+  return terminalText(value)
     .replaceAll('%', '%25')
     .replaceAll('\r', '%0D')
     .replaceAll('\n', '%0A')
@@ -96,4 +105,13 @@ function dotEscape(value: string): string {
       if (character === '\t') return '\\t'
       return ''
     })
+}
+
+function terminalText(value: string): string {
+  return value.replace(/[\u0000-\u001f\u007f-\u009f]/g, (character) => {
+    if (character === '\n') return '\\n'
+    if (character === '\r') return '\\r'
+    if (character === '\t') return '\\t'
+    return `\\u${character.charCodeAt(0).toString(16).padStart(4, '0')}`
+  })
 }

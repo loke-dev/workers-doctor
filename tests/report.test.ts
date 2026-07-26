@@ -50,7 +50,7 @@ describe('reports', () => {
   })
 
   it('keeps control characters inside escaped dot labels', () => {
-    const unsafeName = 'api"\nmalicious [label="owned"]'
+    const unsafeName = 'api"\n\u001b[31mmalicious [label="owned"]'
     const unsafeResult: StackResult = {
       ...result,
       workers: result.workers.map((worker) => ({
@@ -69,9 +69,34 @@ describe('reports', () => {
 
     const output = formatDot(unsafeResult)
     expect(output).toContain(
-      '"api\\"\\nmalicious [label=\\"owned\\"]" [label="api\\"\\nmalicious [label=\\"owned\\"]"];',
+      '"api\\"\\n[31mmalicious [label=\\"owned\\"]" [label="api\\"\\n[31mmalicious [label=\\"owned\\"]"];',
     )
     expect(output).toContain('label="service:\\tAUTH"')
     expect(output).not.toContain('\nmalicious')
+  })
+
+  it('renders configuration control characters visibly in text reports', () => {
+    const unsafeName = 'api\n\u001b[31mowned'
+    const unsafeResult: StackResult = {
+      ...result,
+      workers: result.workers.map((worker) => ({
+        ...worker,
+        name: unsafeName,
+      })),
+      diagnostics: result.diagnostics.map((diagnostic) => ({
+        ...diagnostic,
+        message: `Target ${unsafeName} is outside the stack.`,
+      })),
+    }
+
+    const human = formatHuman(unsafeResult, false)
+    const github = formatGitHub(unsafeResult)
+
+    expect(human).toContain('api\\n\\u001b[31mowned')
+    expect(github).toContain('api\\n\\u001b[31mowned')
+    expect(human).not.toContain('\u001b')
+    expect(github).not.toContain('\u001b')
+    expect(human).not.toContain('\nowned')
+    expect(github).not.toContain('\nowned')
   })
 })

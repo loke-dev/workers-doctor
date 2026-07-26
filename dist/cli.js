@@ -2455,17 +2455,23 @@ function formatHuman(result, color = true) {
   lines.push(
     `${result.summary.workers} worker${result.summary.workers === 1 ? "" : "s"} \xB7 ${result.summary.bindings} bindings \xB7 ${result.summary.remoteBindings} remote`
   );
-  if (result.environment) lines.push(`Environment: ${import_picocolors.default.cyan(result.environment)}`);
+  if (result.environment) {
+    lines.push(`Environment: ${import_picocolors.default.cyan(terminalText(result.environment))}`);
+  }
   lines.push("");
   for (const worker of result.workers) {
-    lines.push(`${import_picocolors.default.bold(worker.name)}  ${import_picocolors.default.dim(worker.configPath)}`);
+    lines.push(
+      `${import_picocolors.default.bold(terminalText(worker.name))}  ${import_picocolors.default.dim(terminalText(worker.configPath))}`
+    );
     if (worker.bindings.length === 0) {
       lines.push(`  ${import_picocolors.default.dim("no bindings")}`);
     } else {
       for (const binding of worker.bindings) {
-        const target = binding.target ? ` \u2192 ${binding.target}` : "";
+        const target = binding.target ? ` \u2192 ${terminalText(binding.target)}` : "";
         const mode = binding.remote ? import_picocolors.default.yellow("remote") : import_picocolors.default.dim("local");
-        lines.push(`  ${binding.type.padEnd(16)} ${binding.name}${target}  ${mode}`);
+        lines.push(
+          `  ${terminalText(binding.type).padEnd(16)} ${terminalText(binding.name)}${target}  ${mode}`
+        );
       }
     }
     lines.push("");
@@ -2486,8 +2492,11 @@ function formatHuman(result, color = true) {
 }
 function formatDiagnostic(item) {
   const icon = item.severity === "error" ? import_picocolors.default.red("\u2715 ERROR") : item.severity === "warning" ? import_picocolors.default.yellow("! WARNING") : import_picocolors.default.cyan("i NOTICE");
-  const lines = [`${icon} ${item.rule}  ${import_picocolors.default.bold(item.title)}`, `  ${item.message}`];
-  if (item.fix) lines.push(`  ${import_picocolors.default.dim(`Fix: ${item.fix}`)}`);
+  const lines = [
+    `${icon} ${item.rule}  ${import_picocolors.default.bold(terminalText(item.title))}`,
+    `  ${terminalText(item.message)}`
+  ];
+  if (item.fix) lines.push(`  ${import_picocolors.default.dim(`Fix: ${terminalText(item.fix)}`)}`);
   return lines.join("\n");
 }
 function formatGitHub(result) {
@@ -2499,7 +2508,7 @@ function formatGitHub(result) {
 `;
 }
 function escape(value) {
-  return value.replaceAll("%", "%25").replaceAll("\r", "%0D").replaceAll("\n", "%0A").replaceAll(":", "%3A").replaceAll(",", "%2C");
+  return terminalText(value).replaceAll("%", "%25").replaceAll("\r", "%0D").replaceAll("\n", "%0A").replaceAll(":", "%3A").replaceAll(",", "%2C");
 }
 function formatDot(result) {
   const lines = ["digraph workers {", "  rankdir=LR;", '  node [shape=box, style="rounded"];'];
@@ -2522,6 +2531,14 @@ function dotEscape(value) {
     if (character === "\r") return "\\r";
     if (character === "	") return "\\t";
     return "";
+  });
+}
+function terminalText(value) {
+  return value.replace(/[\u0000-\u001f\u007f-\u009f]/g, (character) => {
+    if (character === "\n") return "\\n";
+    if (character === "\r") return "\\r";
+    if (character === "	") return "\\t";
+    return `\\u${character.charCodeAt(0).toString(16).padStart(4, "0")}`;
   });
 }
 
