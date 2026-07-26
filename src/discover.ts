@@ -3,14 +3,18 @@ import { basename, resolve } from 'node:path'
 
 const CONFIG_NAMES = new Set(['wrangler.jsonc', 'wrangler.json', 'wrangler.toml'])
 const SKIP_DIRECTORIES = new Set([
+  '.astro',
   '.git',
+  '.next',
+  '.nuxt',
+  '.output',
+  '.svelte-kit',
+  '.vercel',
   '.wrangler',
   'build',
   'coverage',
   'dist',
   'node_modules',
-  '.next',
-  '.output',
 ])
 
 export async function discoverConfigs(inputPath: string, recursive: boolean): Promise<string[]> {
@@ -39,4 +43,3 @@ async function walk(directory: string, recursive: boolean, results: string[]): P
     }
   }
 }
-

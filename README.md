@@ -42,7 +42,8 @@ npx workers-doctor graph > workers.dot
 ```
 
 Wrangler JSONC, JSON, and TOML configurations are supported. Common generated
-directories are skipped during discovery.
+directories are skipped during discovery, including framework output from
+Astro, Next.js, Nuxt, SvelteKit, and Vercel.
 
 ## Start the development plan
 

@@ -116,6 +116,29 @@ describe('inspectStack', () => {
     expect(result.workers[0]?.directory).toBe('.')
   })
 
+  it('ignores Wrangler files inside framework build directories', async () => {
+    const temporary = await mkdtemp(join(tmpdir(), 'workers-doctor-generated-'))
+    try {
+      await writeFile(
+        join(temporary, 'wrangler.json'),
+        JSON.stringify({ name: 'source-worker' }),
+      )
+      for (const directory of ['.astro', '.next', '.nuxt', '.output', '.svelte-kit', '.vercel']) {
+        await mkdir(join(temporary, directory), { recursive: true })
+        await writeFile(
+          join(temporary, directory, 'wrangler.json'),
+          JSON.stringify({ name: `generated-${directory}` }),
+        )
+      }
+
+      const result = await inspectStack(temporary, { recursive: true })
+
+      expect(result.workers.map((worker) => worker.name)).toEqual(['source-worker'])
+    } finally {
+      await rm(temporary, { recursive: true })
+    }
+  })
+
   it('recognizes current Wrangler binding families', async () => {
     const result = await inspectStack(`${fixtures}/bindings`, { recursive: true })
 
