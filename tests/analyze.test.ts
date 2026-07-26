@@ -1,6 +1,7 @@
 import { fileURLToPath } from 'node:url'
+import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { inspectStack } from '../src/analyze.js'
+import { inspectStack, relativeResult } from '../src/analyze.js'
 
 const fixtures = fileURLToPath(new URL('./fixtures/', import.meta.url))
 
@@ -40,6 +41,7 @@ describe('inspectStack', () => {
     expect(rules).toContain('WD005')
     expect(rules).toContain('WD006')
     expect(rules).toContain('WD007')
+    expect(result.diagnostics.filter((item) => item.rule === 'WD007')).toHaveLength(1)
   })
 
   it('reports an absent selected environment', async () => {
@@ -50,5 +52,30 @@ describe('inspectStack', () => {
     expect(result.diagnostics).toContainEqual(
       expect.objectContaining({ rule: 'WD001', severity: 'error' }),
     )
+  })
+
+  it('uses the configuration directory as root for a single file', async () => {
+    const result = relativeResult(await inspectStack(
+      `${fixtures}/healthy/apps/api/wrangler.jsonc`,
+      { recursive: true },
+    ))
+
+    expect(result.root).toBe(resolve(fixtures, 'healthy/apps/api'))
+    expect(result.workers[0]?.configPath).toBe('wrangler.jsonc')
+    expect(result.workers[0]?.directory).toBe('.')
+  })
+
+  it('recognizes current Wrangler binding families', async () => {
+    const result = await inspectStack(`${fixtures}/bindings`, { recursive: true })
+
+    expect(result.workers[0]?.bindings.map((binding) => binding.type)).toEqual([
+      'agent-memory',
+      'ai-search',
+      'assets',
+      'pipeline',
+      'version-metadata',
+      'vpc-service',
+    ])
+    expect(result.summary.remoteBindings).toBe(3)
   })
 })

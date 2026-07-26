@@ -1,7 +1,7 @@
 allowBuilds:
-  esbuild: set this to true or false
-  sharp: set this to true or false
-  workerd: set this to true or false
-onlyBuiltDependencies:
-  - esbuild
-  - workerd
+  esbuild: true
+  sharp: true
+  workerd: true
+overrides:
+  bundle-require>esbuild: 0.28.1
+  tsup>esbuild: 0.28.1

@@ -28,7 +28,6 @@ doctor-auth-staging  apps/auth/wrangler.jsonc
   kv                SESSIONS → local-id  local
 
 i NOTICE WD002  Remote bindings will be used
-! WARNING WD003  Local and remote state are mixed
 ```
 
 ## Inspect a stack
@@ -64,8 +63,8 @@ It does not deploy, create resources, or call the Cloudflare API.
 ## GitHub Actions
 
 ```yaml
-- uses: actions/checkout@v6
-- uses: loke-dev/workers-doctor@v0.1.0
+- uses: actions/checkout@v7
+- uses: loke-dev/workers-doctor@master
   with:
     environment: staging
 ```

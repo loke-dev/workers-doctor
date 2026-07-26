@@ -102,6 +102,8 @@ export function formatDevPlan(commands: DevCommand[]): string {
 }
 
 export async function runDevCommands(commands: DevCommand[]): Promise<number> {
+  if (commands.length === 0) return 0
+
   const children: ChildProcess[] = []
   let closing = false
 
@@ -111,12 +113,22 @@ export async function runDevCommands(commands: DevCommand[]): Promise<number> {
     for (const child of children) child.kill('SIGTERM')
   }
 
-  process.once('SIGINT', stop)
-  process.once('SIGTERM', stop)
-
   return new Promise((resolve) => {
     let remaining = commands.length
     let exitCode = 0
+    let resolved = false
+
+    const finish = (): void => {
+      if (resolved || remaining !== 0) return
+      resolved = true
+      process.removeListener('SIGINT', stop)
+      process.removeListener('SIGTERM', stop)
+      resolve(exitCode)
+    }
+
+    process.once('SIGINT', stop)
+    process.once('SIGTERM', stop)
+
     for (const item of commands) {
       const child = spawn(item.command, item.args, {
         cwd: item.cwd,
@@ -128,11 +140,11 @@ export async function runDevCommands(commands: DevCommand[]): Promise<number> {
         exitCode = 1
         stop()
       })
-      child.once('exit', (code) => {
+      child.once('close', (code) => {
         if (typeof code === 'number' && code !== 0) exitCode = code
         remaining -= 1
         if (!closing && code !== 0) stop()
-        if (remaining === 0) resolve(exitCode)
+        finish()
       })
     }
   })
@@ -152,4 +164,3 @@ function exists(path: string): Promise<boolean> {
     () => false,
   )
 }
-

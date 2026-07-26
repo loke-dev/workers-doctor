@@ -1,5 +1,5 @@
-import { access, readFile, readdir } from 'node:fs/promises'
-import { dirname, relative, resolve } from 'node:path'
+import { access, readFile, readdir, stat } from 'node:fs/promises'
+import { basename, dirname, relative, resolve } from 'node:path'
 import {
   arrayAt,
   booleanAt,
@@ -28,21 +28,37 @@ const ARRAY_BINDINGS: Array<{
   target?: string
 }> = [
   { key: 'services', type: 'service', name: 'binding', target: 'service' },
+  { key: 'agent_memory', type: 'agent-memory', name: 'binding', target: 'namespace' },
+  { key: 'ai_search', type: 'ai-search', name: 'binding', target: 'instance_name' },
+  { key: 'ai_search_namespaces', type: 'ai-search-namespace', name: 'binding', target: 'namespace' },
   { key: 'd1_databases', type: 'd1', name: 'binding', target: 'database_name' },
+  { key: 'artifacts', type: 'artifacts', name: 'binding', target: 'namespace' },
   { key: 'kv_namespaces', type: 'kv', name: 'binding', target: 'id' },
   { key: 'r2_buckets', type: 'r2', name: 'binding', target: 'bucket_name' },
   { key: 'analytics_engine_datasets', type: 'analytics', name: 'binding', target: 'dataset' },
   { key: 'vectorize', type: 'vectorize', name: 'binding', target: 'index_name' },
   { key: 'hyperdrive', type: 'hyperdrive', name: 'binding', target: 'id' },
   { key: 'workflows', type: 'workflow', name: 'binding', target: 'name' },
+  { key: 'mtls_certificates', type: 'mtls-certificate', name: 'binding', target: 'certificate_id' },
+  { key: 'dispatch_namespaces', type: 'dispatch-namespace', name: 'binding', target: 'namespace' },
+  { key: 'pipelines', type: 'pipeline', name: 'binding', target: 'stream' },
+  { key: 'ratelimits', type: 'rate-limit', name: 'name', target: 'namespace_id' },
+  { key: 'vpc_services', type: 'vpc-service', name: 'binding', target: 'service_id' },
+  { key: 'send_email', type: 'email', name: 'name' },
+  { key: 'flagship', type: 'flagship', name: 'binding', target: 'app_id' },
+  { key: 'secrets_store_secrets', type: 'secret-store', name: 'binding', target: 'store_id' },
+  { key: 'vpc_networks', type: 'vpc-network', name: 'binding' },
+  { key: 'worker_loaders', type: 'worker-loader', name: 'binding' },
 ]
 
 export async function inspectStack(
   inputPath: string,
   options: InspectOptions,
 ): Promise<StackResult> {
-  const root = resolve(inputPath)
-  const configPaths = await discoverConfigs(root, options.recursive)
+  const input = resolve(inputPath)
+  const inputInfo = await stat(input)
+  const root = inputInfo.isFile() ? dirname(input) : input
+  const configPaths = await discoverConfigs(input, options.recursive)
   if (configPaths.length === 0) {
     throw new Error(`No Wrangler configuration found below ${root}.`)
   }
@@ -91,7 +107,7 @@ async function projectFromConfig(
   diagnostics: Diagnostic[],
 ): Promise<WorkerProject> {
   const directory = dirname(configPath)
-  const rootName = stringAt(root, 'name') ?? dirname(configPath).split('/').pop() ?? 'worker'
+  const rootName = stringAt(root, 'name') ?? basename(dirname(configPath)) ?? 'worker'
   const envs = objectAt(root, 'env')
   const selected = environment && envs ? objectAt(envs, environment) : undefined
 
@@ -229,8 +245,12 @@ function collectBindings(config: ConfigObject): Binding[] {
 
   for (const descriptor of [
     { key: 'ai', type: 'workers-ai' },
+    { key: 'assets', type: 'assets' },
     { key: 'browser', type: 'browser' },
     { key: 'images', type: 'images' },
+    { key: 'media', type: 'media' },
+    { key: 'version_metadata', type: 'version-metadata' },
+    { key: 'websearch', type: 'web-search' },
   ]) {
     const item = objectAt(config, descriptor.key)
     if (!item) continue
@@ -360,11 +380,20 @@ function findCycles(
   const nextPath = [...path, current]
   for (const target of graph.get(current) ?? []) {
     if (target === start && nextPath.length > 1) {
-      cycles.add([...nextPath, start].join(' -> '))
+      cycles.add(canonicalCycle(nextPath))
     } else if (nextPath.length < graph.size + 1) {
       findCycles(start, target, graph, nextPath, cycles)
     }
   }
+}
+
+function canonicalCycle(nodes: string[]): string {
+  const rotations = nodes.map((_, index) => [...nodes.slice(index), ...nodes.slice(0, index)])
+  const canonical = rotations
+    .map((rotation) => rotation.join(' -> '))
+    .sort((a, b) => a.localeCompare(b))[0] ?? ''
+  const first = canonical.split(' -> ')[0]
+  return `${canonical} -> ${first}`
 }
 
 export function relativeResult(result: StackResult): StackResult {

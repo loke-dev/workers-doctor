@@ -26,10 +26,14 @@ async function main(): Promise<void> {
     const result = relativeResult(rawResult)
 
     if (options.command === 'dev') {
-      if (result.summary.errors > 0) {
+      if (result.summary.errors > 0 || (options.strict && result.summary.warnings > 0)) {
         process.stdout.write(formatHuman(result, options.color))
-        process.stderr.write('Workers Doctor refused to start a stack with errors.\n')
-        process.exitCode = 2
+        process.stderr.write(
+          options.strict && result.summary.errors === 0
+            ? 'Workers Doctor refused to start a stack with warnings in strict mode.\n'
+            : 'Workers Doctor refused to start a stack with errors.\n',
+        )
+        process.exitCode = result.summary.errors > 0 ? 2 : 1
         return
       }
       const commands = await buildDevCommands(rawResult, options.startPort)

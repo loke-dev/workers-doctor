@@ -1,0 +1,39 @@
+{
+  "name": "binding-surface",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-26",
+  "agent_memory": [
+    {
+      "binding": "MEMORY",
+      "namespace": "assistant-memory",
+      "remote": true
+    }
+  ],
+  "ai_search": [
+    {
+      "binding": "SEARCH",
+      "instance_name": "docs"
+    }
+  ],
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS"
+  },
+  "pipelines": [
+    {
+      "binding": "EVENTS",
+      "stream": "events-stream",
+      "remote": true
+    }
+  ],
+  "version_metadata": {
+    "binding": "CF_VERSION_METADATA"
+  },
+  "vpc_services": [
+    {
+      "binding": "PRIVATE_API",
+      "service_id": "private-api",
+      "remote": true
+    }
+  ]
+}
