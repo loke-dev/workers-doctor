@@ -187,10 +187,10 @@ async function projectFromConfig(
       rule: 'WD005',
       severity: 'warning',
       title: 'Required local secrets are missing',
-      message: `${name} is missing ${secretState.missing.join(', ')} in its selected local secret file.`,
+      message: `${name} is missing ${secretState.missing.join(', ')} from its local secret sources.`,
       file: configPath,
       worker: name,
-      fix: 'Add the missing names to the local secret file. Workers Doctor never reads or reports their values.',
+      fix: 'Add the missing names to the selected local secret file or process environment. Workers Doctor never reads or reports their values.',
     })
   }
 
@@ -349,6 +349,9 @@ async function inspectSecretFiles(
     for (const file of envFiles.reverse()) {
       addDotEnvKeys(keys, await readFile(resolve(directory, file), 'utf8'))
     }
+  }
+  for (const name of required) {
+    if (Object.hasOwn(process.env, name)) keys.add(name)
   }
 
   return {

@@ -11,8 +11,9 @@ Inspect and safely run multi-Worker Cloudflare projects.
 
 Workers Doctor turns a directory of Wrangler files into one understandable
 development plan. It resolves the selected environment, maps service and
-resource bindings, identifies local and remote state, checks local secret names,
-and can start the stack only after the plan is visible.
+resource bindings, identifies local and remote state, checks secret names from
+local files and the process environment, and can start the stack only after the
+plan is visible.
 
 ```console
 $ npx workers-doctor inspect --env staging
@@ -86,7 +87,7 @@ from the selected repository tag without downloading executable code from npm.
 | `WD002` | Remote bindings are clearly reported |
 | `WD003` | Local and remote state are not mixed accidentally |
 | `WD004` | A project does not mix `.dev.vars` and `.env` |
-| `WD005` | Names declared in `secrets.required` exist locally |
+| `WD005` | Names declared in `secrets.required` exist in local secret sources |
 | `WD006` | Service binding targets resolve inside the scanned stack |
 | `WD007` | Service binding cycles, including self-cycles, are visible |
 | `WD008` | Effective Worker names are unique inside the scanned stack |

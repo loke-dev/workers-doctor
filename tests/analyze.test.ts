@@ -105,6 +105,33 @@ describe('inspectStack', () => {
     }
   })
 
+  it('accepts required secrets supplied through the process environment', async () => {
+    const temporary = await mkdtemp(join(tmpdir(), 'workers-doctor-process-secret-'))
+    const secretName = 'WORKERS_DOCTOR_PROCESS_SECRET'
+    const previous = process.env[secretName]
+    try {
+      await writeFile(
+        join(temporary, 'wrangler.json'),
+        JSON.stringify({
+          name: 'process-secret-worker',
+          secrets: { required: [secretName] },
+        }),
+      )
+      process.env[secretName] = 'test-value'
+
+      const result = await inspectStack(temporary, { recursive: true })
+
+      expect(result.diagnostics).not.toContainEqual(
+        expect.objectContaining({ rule: 'WD005' }),
+      )
+      expect(JSON.stringify(result)).not.toContain('test-value')
+    } finally {
+      if (previous === undefined) delete process.env[secretName]
+      else process.env[secretName] = previous
+      await rm(temporary, { recursive: true })
+    }
+  })
+
   it('uses the configuration directory as root for a single file', async () => {
     const result = relativeResult(await inspectStack(
       `${fixtures}/healthy/apps/api/wrangler.jsonc`,
