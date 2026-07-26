@@ -33,8 +33,6 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
-      - name: Verify committed CLI bundle
-        run: git diff --exit-code -- dist
       - name: Smoke test local Action
         uses: ./
         with:

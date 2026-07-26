@@ -106,9 +106,14 @@ Worker and binding names cannot inject terminal or workflow-command output.
 ```sh
 pnpm install
 pnpm check
+pnpm dist:check
 pnpm dev -- tests/fixtures/healthy --env staging
 pnpm site:dev
 ```
+
+`pnpm check` includes a `dist` verification step, and `pnpm dist:check` is a
+small standalone command if you only need to confirm the committed CLI bundle is
+up-to-date.
 
 ## License
 

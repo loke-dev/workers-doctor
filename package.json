@@ -13,7 +13,8 @@
   ],
   "scripts": {
     "build": "tsup",
-    "check": "tsc --noEmit && vitest run && tsup && vite build --config site/vite.config.ts",
+    "dist:check": "git diff --exit-code -- dist",
+    "check": "tsc --noEmit && vitest run && tsup && vite build --config site/vite.config.ts && pnpm dist:check",
     "dev": "tsx src/cli.ts",
     "site:dev": "vite --config site/vite.config.ts",
     "site:build": "vite build --config site/vite.config.ts",
@@ -22,7 +23,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
-    "prepublishOnly": "pnpm check && git diff --exit-code -- dist"
+    "prepublishOnly": "pnpm check"
   },
   "keywords": [
     "cloudflare",
