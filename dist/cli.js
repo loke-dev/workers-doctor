@@ -2370,6 +2370,13 @@ function parseArgs(args) {
     values.shift();
   }
   if (command === "graph") format2 = "dot";
+  const parsePort = (value, option) => {
+    const port = Number(value);
+    if (!Number.isInteger(port) || port < 1 || port > 65535) {
+      throw new CliArgumentError(`${option} must be an integer between 1 and 65535.`);
+    }
+    return port;
+  };
   for (let index = 0; index < values.length; index += 1) {
     const argument = values[index];
     if (!argument) continue;
@@ -2396,18 +2403,13 @@ function parseArgs(args) {
     } else if (argument === "--dry-run") {
       dryRun = true;
     } else if (argument === "--port") {
-      const value = Number(requiredValue(values, ++index, argument));
-      if (!Number.isInteger(value) || value < 1 || value > 65535) {
-        throw new CliArgumentError("--port must be an integer between 1 and 65535.");
-      }
-      startPort = value;
+      startPort = parsePort(requiredValue(values, ++index, argument), "--port");
       portSpecified = true;
     } else if (argument === "-p") {
-      const value = Number(requiredValue(values, ++index, argument));
-      if (!Number.isInteger(value) || value < 1 || value > 65535) {
-        throw new CliArgumentError("--port must be an integer between 1 and 65535.");
-      }
-      startPort = value;
+      startPort = parsePort(requiredValue(values, ++index, argument), "--port");
+      portSpecified = true;
+    } else if (argument.startsWith("-p") && argument !== "-p") {
+      startPort = parsePort(argument.slice(2), "--port");
       portSpecified = true;
     } else if (argument.startsWith("-")) {
       throw new CliArgumentError(`Unknown option "${argument}".`);

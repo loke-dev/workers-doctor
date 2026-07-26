@@ -23,6 +23,8 @@ describe('parseArgs', () => {
     expect(() => parseArgs(['dev', '-p', '70000'])).toThrow(CliArgumentError)
     expect(() => parseArgs(['dev', '-p'])).toThrow('requires a value.')
     expect(parseArgs(['dev', '-p', '8080']).startPort).toBe(8080)
+    expect(parseArgs(['dev', '-p8080']).startPort).toBe(8080)
+    expect(() => parseArgs(['dev', '-pfoo'])).toThrow(CliArgumentError)
   })
 
   it('rejects options that the selected command cannot honor', () => {
