@@ -64,7 +64,7 @@ It does not deploy, create resources, or call the Cloudflare API.
 
 ```yaml
 - uses: actions/checkout@v7
-- uses: loke-dev/workers-doctor@v0.1.0
+- uses: loke-dev/workers-doctor@v0.1.1
   with:
     environment: staging
 ```
