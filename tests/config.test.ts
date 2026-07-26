@@ -28,4 +28,22 @@ describe('readConfig', () => {
       await rm(temporary, { recursive: true })
     }
   })
+
+  it('does not expose TOML source values in parse failures', async () => {
+    const temporary = await mkdtemp(join(tmpdir(), 'workers-doctor-config-'))
+    const config = join(temporary, 'wrangler.toml')
+    try {
+      await writeFile(config, 'TOKEN = private-value')
+
+      const error = await readConfig(config).catch((caught: unknown) => caught)
+
+      expect(error).toBeInstanceOf(ConfigError)
+      expect((error as Error).message).toBe(
+        `Could not parse ${config}: Invalid TOML configuration`,
+      )
+      expect((error as Error).message).not.toContain('private-value')
+    } finally {
+      await rm(temporary, { recursive: true })
+    }
+  })
 })

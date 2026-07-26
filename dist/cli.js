@@ -1708,7 +1708,11 @@ async function readConfig(filePath) {
   }
   try {
     if (extname(filePath) === ".toml") {
-      return parse3(source);
+      try {
+        return parse3(source);
+      } catch {
+        throw new Error("Invalid TOML configuration");
+      }
     }
     const errors = [];
     const value = parse2(source, errors, { allowTrailingComma: true });

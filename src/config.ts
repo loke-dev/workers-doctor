@@ -25,7 +25,11 @@ export async function readConfig(filePath: string): Promise<ConfigObject> {
 
   try {
     if (extname(filePath) === '.toml') {
-      return parseToml(source) as ConfigObject
+      try {
+        return parseToml(source) as ConfigObject
+      } catch {
+        throw new Error('Invalid TOML configuration')
+      }
     }
 
     const errors: ParseError[] = []
