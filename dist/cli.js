@@ -1699,7 +1699,13 @@ var ConfigError = class extends Error {
   filePath;
 };
 async function readConfig(filePath) {
-  const source = await readFile(filePath, "utf8");
+  let source;
+  try {
+    source = await readFile(filePath, "utf8");
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new ConfigError(`Could not read ${filePath}: ${message}`, filePath);
+  }
   try {
     if (extname(filePath) === ".toml") {
       return parse3(source);

@@ -15,7 +15,14 @@ export class ConfigError extends Error {
 }
 
 export async function readConfig(filePath: string): Promise<ConfigObject> {
-  const source = await readFile(filePath, 'utf8')
+  let source: string
+  try {
+    source = await readFile(filePath, 'utf8')
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    throw new ConfigError(`Could not read ${filePath}: ${message}`, filePath)
+  }
+
   try {
     if (extname(filePath) === '.toml') {
       return parseToml(source) as ConfigObject
@@ -57,4 +64,3 @@ export function stringAt(object: ConfigObject, key: string): string | undefined 
 export function booleanAt(object: ConfigObject, key: string): boolean {
   return object[key] === true
 }
-
