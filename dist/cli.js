@@ -2299,6 +2299,7 @@ function parseArgs(args) {
   let color = true;
   let dryRun = false;
   let startPort = 8787;
+  let portSpecified = false;
   let positionalSeen = false;
   const values = [...args];
   const first = values[0];
@@ -2338,6 +2339,7 @@ function parseArgs(args) {
         throw new CliArgumentError("--port must be an integer between 1 and 65535.");
       }
       startPort = value;
+      portSpecified = true;
     } else if (argument.startsWith("-")) {
       throw new CliArgumentError(`Unknown option "${argument}".`);
     } else if (!positionalSeen) {
@@ -2346,6 +2348,18 @@ function parseArgs(args) {
     } else {
       throw new CliArgumentError(`Unexpected argument "${argument}".`);
     }
+  }
+  if (command !== "dev" && dryRun) {
+    throw new CliArgumentError("--dry-run is only valid with the dev command.");
+  }
+  if (command !== "dev" && portSpecified) {
+    throw new CliArgumentError("--port is only valid with the dev command.");
+  }
+  if (command === "dev" && format2 !== "human") {
+    throw new CliArgumentError("Output format options are not supported with the dev command.");
+  }
+  if (command === "graph" && format2 !== "dot") {
+    throw new CliArgumentError("The graph command only supports dot output.");
   }
   return {
     command,

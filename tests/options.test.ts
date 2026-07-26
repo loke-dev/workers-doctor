@@ -22,6 +22,21 @@ describe('parseArgs', () => {
     expect(() => parseArgs(['dev', '--port', '1.5'])).toThrow(CliArgumentError)
   })
 
+  it('rejects options that the selected command cannot honor', () => {
+    expect(() => parseArgs(['inspect', '--dry-run'])).toThrow(
+      '--dry-run is only valid with the dev command.',
+    )
+    expect(() => parseArgs(['inspect', '--port', '8788'])).toThrow(
+      '--port is only valid with the dev command.',
+    )
+    expect(() => parseArgs(['dev', '--json'])).toThrow(
+      'Output format options are not supported with the dev command.',
+    )
+    expect(() => parseArgs(['graph', '--github'])).toThrow(
+      'The graph command only supports dot output.',
+    )
+  })
+
   it('rejects unknown arguments', () => {
     expect(() => parseArgs(['--wat'])).toThrow('Unknown option')
   })
