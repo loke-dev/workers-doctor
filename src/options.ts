@@ -51,7 +51,7 @@ export function parseArgs(args: string[]): CliOptions {
     } else if (argument === '--dry-run') {
       dryRun = true
     } else if (argument === '--port') {
-      const value = Number.parseInt(requiredValue(values, ++index, argument), 10)
+      const value = Number(requiredValue(values, ++index, argument))
       if (!Number.isInteger(value) || value < 1 || value > 65535) {
         throw new CliArgumentError('--port must be an integer between 1 and 65535.')
       }
@@ -90,4 +90,3 @@ function requiredValue(args: string[], index: number, option: string): string {
 export function wantsJson(args: string[]): boolean {
   return args.includes('--json') || args.some((value, index) => value === '--format' && args[index + 1] === 'json')
 }
-

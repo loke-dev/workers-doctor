@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
-import { inspectStack, relativeResult, VERSION } from './analyze.js'
+import { readFile } from 'node:fs/promises'
+import { fileURLToPath } from 'node:url'
+import { inspectStack, relativeResult } from './analyze.js'
 import { ConfigError } from './config.js'
 import { buildDevCommands, formatDevPlan, runDevCommands } from './dev.js'
 import { CliArgumentError, parseArgs, wantsJson } from './options.js'
@@ -9,11 +11,11 @@ import { formatDot, formatGitHub, formatHuman } from './report.js'
 async function main(): Promise<void> {
   const args = process.argv.slice(2)
   if (args.includes('--help') || args.includes('-h')) {
-    process.stdout.write(help())
+    process.stdout.write(help(await packageVersion()))
     return
   }
   if (args.includes('--version') || args.includes('-v')) {
-    process.stdout.write(`${VERSION}\n`)
+    process.stdout.write(`${await packageVersion()}\n`)
     return
   }
 
@@ -68,8 +70,22 @@ function setExitCode(
   else if (strict && summary.warnings > 0) process.exitCode = 1
 }
 
-function help(): string {
-  return `Workers Doctor v${VERSION}
+async function packageVersion(): Promise<string> {
+  const packageFile = fileURLToPath(new URL('../package.json', import.meta.url))
+  const parsed: unknown = JSON.parse(await readFile(packageFile, 'utf8'))
+  if (
+    typeof parsed !== 'object'
+    || parsed === null
+    || !('version' in parsed)
+    || typeof parsed.version !== 'string'
+  ) {
+    throw new Error('Package version is missing or invalid.')
+  }
+  return parsed.version
+}
+
+function help(version: string): string {
+  return `Workers Doctor v${version}
 
 Inspect and safely run multi-Worker Cloudflare projects.
 

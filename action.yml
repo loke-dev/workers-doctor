@@ -19,21 +19,20 @@ inputs:
     description: Fail when warnings are found.
     required: false
     default: "true"
-  version:
-    description: Workers Doctor npm version to run.
-    required: false
-    default: latest
-
 runs:
   using: composite
   steps:
+    - name: Set up Node.js
+      uses: actions/setup-node@v7
+      with:
+        node-version: 24
+        package-manager-cache: false
     - name: Run Workers Doctor
       shell: bash
       env:
         WORKERS_DOCTOR_PATH: ${{ inputs.path }}
         WORKERS_DOCTOR_ENVIRONMENT: ${{ inputs.environment }}
         WORKERS_DOCTOR_STRICT: ${{ inputs.strict }}
-        WORKERS_DOCTOR_VERSION: ${{ inputs.version }}
       run: |
         set -euo pipefail
         args=("inspect" "$WORKERS_DOCTOR_PATH" "--github")
@@ -43,5 +42,4 @@ runs:
         if [[ "$WORKERS_DOCTOR_STRICT" == "true" ]]; then
           args+=("--strict")
         fi
-        npx --yes "workers-doctor@${WORKERS_DOCTOR_VERSION}" "${args[@]}"
-
+        node "$GITHUB_ACTION_PATH/dist/cli.js" "${args[@]}"

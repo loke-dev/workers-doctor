@@ -64,13 +64,14 @@ It does not deploy, create resources, or call the Cloudflare API.
 
 ```yaml
 - uses: actions/checkout@v7
-- uses: loke-dev/workers-doctor@master
+- uses: loke-dev/workers-doctor@v0.1.0
   with:
     environment: staging
 ```
 
 The reusable Action annotates configuration problems and fails on errors. Its
-inputs are `path`, `environment`, `strict`, and `version`.
+inputs are `path`, `environment`, and `strict`. It runs the reviewed CLI bundle
+from the selected repository tag without downloading executable code from npm.
 
 ## Diagnostics
 
@@ -82,7 +83,8 @@ inputs are `path`, `environment`, `strict`, and `version`.
 | `WD004` | A project does not mix `.dev.vars` and `.env` |
 | `WD005` | Names declared in `secrets.required` exist locally |
 | `WD006` | Service binding targets resolve inside the scanned stack |
-| `WD007` | Service binding cycles are visible |
+| `WD007` | Service binding cycles, including self-cycles, are visible |
+| `WD008` | Effective Worker names are unique inside the scanned stack |
 
 Secret values are never reported. `inspect`, `graph`, and CI output are fully
 offline and require no Cloudflare account.

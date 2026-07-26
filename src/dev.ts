@@ -16,6 +16,11 @@ export async function buildDevCommands(
   startPort: number,
 ): Promise<DevCommand[]> {
   const ordered = orderWorkers(result)
+  if (ordered.length > 0 && startPort + ordered.length - 1 > 65535) {
+    throw new Error(
+      `Port range ${startPort}-${startPort + ordered.length - 1} exceeds the maximum port 65535.`,
+    )
+  }
   return Promise.all(
     ordered.map(async (worker, index) => {
       const runner = await detectRunner(worker)
@@ -106,28 +111,31 @@ export async function runDevCommands(commands: DevCommand[]): Promise<number> {
 
   const children: ChildProcess[] = []
   let closing = false
+  let exitCode = 0
 
-  const stop = (): void => {
+  const stop = (signalExitCode?: number): void => {
+    if (signalExitCode !== undefined && exitCode === 0) exitCode = signalExitCode
     if (closing) return
     closing = true
     for (const child of children) child.kill('SIGTERM')
   }
+  const interrupt = (): void => stop(130)
+  const terminate = (): void => stop(143)
 
   return new Promise((resolve) => {
     let remaining = commands.length
-    let exitCode = 0
     let resolved = false
 
     const finish = (): void => {
       if (resolved || remaining !== 0) return
       resolved = true
-      process.removeListener('SIGINT', stop)
-      process.removeListener('SIGTERM', stop)
+      process.removeListener('SIGINT', interrupt)
+      process.removeListener('SIGTERM', terminate)
       resolve(exitCode)
     }
 
-    process.once('SIGINT', stop)
-    process.once('SIGTERM', stop)
+    process.once('SIGINT', interrupt)
+    process.once('SIGTERM', terminate)
 
     for (const item of commands) {
       const child = spawn(item.command, item.args, {

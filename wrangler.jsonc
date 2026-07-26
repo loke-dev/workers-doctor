@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "workers-doctor",
-  "compatibility_date": "2026-07-25",
+  "compatibility_date": "2026-07-26",
   "routes": [
     {
       "pattern": "workers-doctor.loke.dev",
@@ -17,4 +17,3 @@
     "head_sampling_rate": 0.1
   }
 }
-

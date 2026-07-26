@@ -18,10 +18,11 @@ describe('parseArgs', () => {
 
   it('validates ports', () => {
     expect(() => parseArgs(['dev', '--port', '70000'])).toThrow(CliArgumentError)
+    expect(() => parseArgs(['dev', '--port', '8787abc'])).toThrow(CliArgumentError)
+    expect(() => parseArgs(['dev', '--port', '1.5'])).toThrow(CliArgumentError)
   })
 
   it('rejects unknown arguments', () => {
     expect(() => parseArgs(['--wat'])).toThrow('Unknown option')
   })
 })
-

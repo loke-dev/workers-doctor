@@ -98,4 +98,29 @@ describe('inspectStack', () => {
     ])
     expect(result.summary.remoteBindings).toBe(3)
   })
+
+  it('blocks duplicate effective names and reports self-cycles', async () => {
+    const temporary = await mkdtemp(join(tmpdir(), 'workers-doctor-duplicates-'))
+    try {
+      await mkdir(join(temporary, 'api'), { recursive: true })
+      await mkdir(join(temporary, 'other'), { recursive: true })
+      const config = JSON.stringify({
+        name: 'duplicate',
+        services: [{ binding: 'SELF', service: 'duplicate' }],
+      })
+      await writeFile(join(temporary, 'api/wrangler.json'), config)
+      await writeFile(join(temporary, 'other/wrangler.json'), config)
+
+      const result = await inspectStack(temporary, { recursive: true })
+
+      expect(result.diagnostics).toContainEqual(
+        expect.objectContaining({ rule: 'WD008', severity: 'error' }),
+      )
+      expect(result.diagnostics).toContainEqual(
+        expect.objectContaining({ rule: 'WD007', message: 'duplicate -> duplicate' }),
+      )
+    } finally {
+      await rm(temporary, { recursive: true })
+    }
+  })
 })

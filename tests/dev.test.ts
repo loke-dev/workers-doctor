@@ -1,8 +1,39 @@
 import { describe, expect, it } from 'vitest'
-import { runDevCommands } from '../src/dev.js'
+import { buildDevCommands, runDevCommands } from '../src/dev.js'
+import type { StackResult } from '../src/types.js'
 
 describe('runDevCommands', () => {
   it('finishes immediately when there are no commands', async () => {
     await expect(runDevCommands([])).resolves.toBe(0)
+  })
+
+  it('rejects a generated port range above 65535', async () => {
+    const worker = (name: string): StackResult['workers'][number] => ({
+      configPath: `/tmp/${name}/wrangler.jsonc`,
+      directory: `/tmp/${name}`,
+      rootName: name,
+      name,
+      bindings: [],
+      serviceTargets: [],
+      requiredSecrets: [],
+    })
+    const result: StackResult = {
+      root: '/tmp',
+      workers: [worker('api'), worker('auth')],
+      edges: [],
+      diagnostics: [],
+      summary: {
+        workers: 2,
+        bindings: 0,
+        remoteBindings: 0,
+        errors: 0,
+        warnings: 0,
+        infos: 0,
+      },
+    }
+
+    await expect(buildDevCommands(result, 65535)).rejects.toThrow(
+      'Port range 65535-65536 exceeds the maximum port 65535.',
+    )
   })
 })

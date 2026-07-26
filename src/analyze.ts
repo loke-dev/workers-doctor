@@ -19,8 +19,6 @@ import type {
   WorkerProject,
 } from './types.js'
 
-export const VERSION = '0.1.0'
-
 const ARRAY_BINDINGS: Array<{
   key: string
   type: string
@@ -71,6 +69,7 @@ export async function inspectStack(
     workers.push(await projectFromConfig(configPath, config, options.environment, diagnostics))
   }
 
+  diagnostics.push(...diagnoseDuplicateNames(workers))
   const edges = buildEdges(workers)
   diagnostics.push(...diagnoseServices(workers, edges))
   diagnostics.push(...diagnoseCycles(edges, workers))
@@ -98,6 +97,26 @@ export async function inspectStack(
       infos: diagnostics.filter((item) => item.severity === 'info').length,
     },
   }
+}
+
+function diagnoseDuplicateNames(workers: WorkerProject[]): Diagnostic[] {
+  const counts = new Map<string, number>()
+  for (const worker of workers) counts.set(worker.name, (counts.get(worker.name) ?? 0) + 1)
+
+  return [...counts.entries()]
+    .filter(([, count]) => count > 1)
+    .map(([name, count]) => {
+      const worker = workers.find((item) => item.name === name)
+      return {
+        rule: 'WD008',
+        severity: 'error',
+        title: 'Worker name is duplicated',
+        message: `${count} scanned configurations resolve to ${name}, so dependency targets are ambiguous.`,
+        file: worker?.configPath ?? '',
+        worker: name,
+        fix: 'Give every Worker a unique effective name in the selected environment.',
+      }
+    })
 }
 
 async function projectFromConfig(
@@ -379,7 +398,7 @@ function findCycles(
   if (path.includes(current)) return
   const nextPath = [...path, current]
   for (const target of graph.get(current) ?? []) {
-    if (target === start && nextPath.length > 1) {
+    if (target === start) {
       cycles.add(canonicalCycle(nextPath))
     } else if (nextPath.length < graph.size + 1) {
       findCycles(start, target, graph, nextPath, cycles)
