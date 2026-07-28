@@ -1010,7 +1010,7 @@ function printParseErrorCode(code) {
   return "<unknown ParseErrorCode>";
 }
 
-// node_modules/.pnpm/smol-toml@1.7.0/node_modules/smol-toml/dist/date.js
+// node_modules/.pnpm/smol-toml@1.7.1/node_modules/smol-toml/dist/date.js
 var DATE_TIME_RE = /^(\d{4}-\d{2}-\d{2})?[T ]?(?:(\d{2}):\d{2}(?::\d{2}(?:\.\d+)?)?)?(Z|[-+]\d{2}:\d{2})?$/i;
 var TomlDate = class _TomlDate extends Date {
   #hasDate = false;
@@ -1102,7 +1102,7 @@ var TomlDate = class _TomlDate extends Date {
   }
 };
 
-// node_modules/.pnpm/smol-toml@1.7.0/node_modules/smol-toml/dist/error.js
+// node_modules/.pnpm/smol-toml@1.7.1/node_modules/smol-toml/dist/error.js
 function getLineColFromPtr(string, ptr) {
   let lines = string.slice(0, ptr).split(/\r\n|\n|\r/g);
   return [lines.length, lines.pop().length + 1];
@@ -1142,7 +1142,7 @@ ${codeblock}`, options);
   }
 };
 
-// node_modules/.pnpm/smol-toml@1.7.0/node_modules/smol-toml/dist/primitive.js
+// node_modules/.pnpm/smol-toml@1.7.1/node_modules/smol-toml/dist/primitive.js
 var INT_REGEX = /^((0x[0-9a-fA-F](_?[0-9a-fA-F])*)|(([+-]|0[ob])?\d(_?\d)*))$/;
 var FLOAT_REGEX = /^[+-]?\d(_?\d)*(\.\d(_?\d)*)?([eE][+-]?\d(_?\d)*)?$/;
 var LEADING_ZERO = /^[+-]?0[0-9_]/;
@@ -1301,7 +1301,7 @@ function parseValue(value, toml, ptr, integersAsBigInt) {
   return date;
 }
 
-// node_modules/.pnpm/smol-toml@1.7.0/node_modules/smol-toml/dist/util.js
+// node_modules/.pnpm/smol-toml@1.7.1/node_modules/smol-toml/dist/util.js
 function indexOfNewline(str, start = 0, end = str.length) {
   let idx = str.indexOf("\n", start);
   if (str[idx - 1] === "\r")
@@ -1344,6 +1344,8 @@ function skipUntil(str, ptr, sep, end, banNewLines = false) {
     let c = str[i];
     if (c === "#") {
       i = indexOfNewline(str, i);
+      if (i < 0)
+        break;
     } else if (c === sep) {
       return i + 1;
     } else if (c === end || banNewLines && (c === "\n" || c === "\r" && str[i + 1] === "\n")) {
@@ -1356,7 +1358,7 @@ function skipUntil(str, ptr, sep, end, banNewLines = false) {
   });
 }
 
-// node_modules/.pnpm/smol-toml@1.7.0/node_modules/smol-toml/dist/extract.js
+// node_modules/.pnpm/smol-toml@1.7.1/node_modules/smol-toml/dist/extract.js
 function sliceAndTrimEndOf(str, startPtr, endPtr) {
   let value = str.slice(startPtr, endPtr);
   let commentIdx = value.indexOf("#");
@@ -1423,7 +1425,7 @@ function extractValue(str, ptr, end, depth, integersAsBigInt) {
   ];
 }
 
-// node_modules/.pnpm/smol-toml@1.7.0/node_modules/smol-toml/dist/struct.js
+// node_modules/.pnpm/smol-toml@1.7.1/node_modules/smol-toml/dist/struct.js
 var KEY_PART_RE = /^[a-zA-Z0-9-_]+[ \t]*$/;
 function parseKey(str, ptr, end = "=") {
   let dot = ptr - 1;
@@ -1565,7 +1567,7 @@ function parseArray(str, ptr, depth, integersAsBigInt) {
   return [res, ptr];
 }
 
-// node_modules/.pnpm/smol-toml@1.7.0/node_modules/smol-toml/dist/parse.js
+// node_modules/.pnpm/smol-toml@1.7.1/node_modules/smol-toml/dist/parse.js
 function peekTable(key, table, meta, type) {
   let t = table;
   let m = meta;
