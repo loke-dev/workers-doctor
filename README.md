@@ -66,7 +66,6 @@ Use `-p` (or `--port`) to shift the local port range when 8787 is already in use
 ```sh
 npx workers-doctor dev --env staging --dry-run -p 9000
 ```
-```
 
 Workers Doctor uses the repository's lockfile to select pnpm, npm, Bun, or Yarn.
 It stops the remaining processes and exits nonzero if any managed Worker fails
