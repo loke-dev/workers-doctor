@@ -210,6 +210,30 @@ describe('inspectStack', () => {
     expect(result.summary).toMatchObject({ bindings: 13, remoteBindings: 4 })
   })
 
+  it('maps the legacy pipeline target field', async () => {
+    const temporary = await mkdtemp(join(tmpdir(), 'workers-doctor-pipeline-'))
+    try {
+      await writeFile(
+        join(temporary, 'wrangler.json'),
+        JSON.stringify({
+          name: 'pipeline-worker',
+          pipelines: [{ binding: 'EVENTS', pipeline: 'legacy-stream' }],
+        }),
+      )
+
+      const result = await inspectStack(temporary, { recursive: true })
+
+      expect(result.edges).toContainEqual({
+        from: 'pipeline-worker',
+        to: 'legacy-stream',
+        label: 'pipeline:EVENTS',
+        remote: false,
+      })
+    } finally {
+      await rm(temporary, { recursive: true })
+    }
+  })
+
   it('does not treat variables and modules as local resource state', async () => {
     const temporary = await mkdtemp(join(tmpdir(), 'workers-doctor-object-bindings-'))
     try {

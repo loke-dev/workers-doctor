@@ -280,7 +280,10 @@ function collectBindings(config: ConfigObject): Binding[] {
     for (const item of arrayAt(config, descriptor.key)) {
       const name = stringAt(item, descriptor.name)
       if (!name) continue
-      const target = descriptor.target ? stringAt(item, descriptor.target) : undefined
+      const target = descriptor.target
+        ? stringAt(item, descriptor.target)
+          ?? (descriptor.key === 'pipelines' ? stringAt(item, 'pipeline') : undefined)
+        : undefined
       bindings.push({
         type: descriptor.type,
         name,

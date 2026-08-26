@@ -2009,7 +2009,7 @@ function collectBindings(config) {
     for (const item of arrayAt(config, descriptor.key)) {
       const name = stringAt(item, descriptor.name);
       if (!name) continue;
-      const target = descriptor.target ? stringAt(item, descriptor.target) : void 0;
+      const target = descriptor.target ? stringAt(item, descriptor.target) ?? (descriptor.key === "pipelines" ? stringAt(item, "pipeline") : void 0) : void 0;
       bindings.push({
         type: descriptor.type,
         name,
