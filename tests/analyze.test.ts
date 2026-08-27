@@ -261,6 +261,56 @@ describe('inspectStack', () => {
     }
   })
 
+  it('maps Queue producers and consumer triggers to queue edges', async () => {
+    const temporary = await mkdtemp(join(tmpdir(), 'workers-doctor-queue-'))
+    try {
+      await mkdir(join(temporary, 'consumer'), { recursive: true })
+      await writeFile(
+        join(temporary, 'wrangler.json'),
+        JSON.stringify({
+          name: 'producer',
+          queues: {
+            producers: [{ binding: 'EVENTS', queue: 'events', remote: true }],
+          },
+        }),
+      )
+      await writeFile(
+        join(temporary, 'consumer/wrangler.json'),
+        JSON.stringify({
+          name: 'consumer',
+          queues: { consumers: [{ queue: 'events' }] },
+        }),
+      )
+
+      const result = await inspectStack(temporary, { recursive: true })
+      const consumer = result.workers.find((worker) => worker.name === 'consumer')
+
+      expect(consumer?.bindings).toContainEqual({
+        type: 'queue-consumer',
+        name: 'events',
+        target: 'events',
+        remote: false,
+      })
+      expect(result.edges).toContainEqual({
+        from: 'producer',
+        to: 'events',
+        label: 'queue:EVENTS',
+        remote: true,
+      })
+      expect(result.edges).toContainEqual({
+        from: 'consumer',
+        to: 'events',
+        label: 'queue-consumer:events',
+        remote: false,
+      })
+      expect(result.diagnostics).not.toContainEqual(
+        expect.objectContaining({ rule: 'WD003' }),
+      )
+    } finally {
+      await rm(temporary, { recursive: true })
+    }
+  })
+
   it('maps the legacy pipeline target field', async () => {
     const temporary = await mkdtemp(join(tmpdir(), 'workers-doctor-pipeline-'))
     try {

@@ -1831,6 +1831,7 @@ var NON_STATE_BINDINGS = /* @__PURE__ */ new Set([
   "service",
   "tail-consumer",
   "streaming-tail-consumer",
+  "queue-consumer",
   ...OBJECT_BINDINGS.map((binding) => binding.type)
 ]);
 async function inspectStack(inputPath, options) {
@@ -2033,6 +2034,16 @@ function collectBindings(config) {
         name,
         remote: booleanAt(item, "remote"),
         ...target ? { target } : {}
+      });
+    }
+    for (const item of arrayAt(queues, "consumers")) {
+      const name = stringAt(item, "queue");
+      if (!name) continue;
+      bindings.push({
+        type: "queue-consumer",
+        name,
+        remote: false,
+        target: name
       });
     }
   }

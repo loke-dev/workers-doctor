@@ -63,6 +63,7 @@ const NON_STATE_BINDINGS = new Set([
   'service',
   'tail-consumer',
   'streaming-tail-consumer',
+  'queue-consumer',
   ...OBJECT_BINDINGS.map((binding) => binding.type),
 ])
 
@@ -308,6 +309,16 @@ function collectBindings(config: ConfigObject): Binding[] {
         name,
         remote: booleanAt(item, 'remote'),
         ...(target ? { target } : {}),
+      })
+    }
+    for (const item of arrayAt(queues, 'consumers')) {
+      const name = stringAt(item, 'queue')
+      if (!name) continue
+      bindings.push({
+        type: 'queue-consumer',
+        name,
+        remote: false,
+        target: name,
       })
     }
   }

@@ -11,7 +11,8 @@ Inspect and safely run multi-Worker Cloudflare projects.
 
 Workers Doctor turns a directory of Wrangler files into one understandable
 development plan. It resolves the selected environment, maps service, tail
-consumer, streaming tail consumer, and resource bindings, includes variables and
+consumer, streaming tail consumer, Queue producer and consumer, and resource
+bindings, includes variables and
 legacy module bindings in collision checks, identifies local and remote state,
 checks secret names
 from local files and the process environment, and can start the stack only
@@ -107,6 +108,8 @@ files Wrangler selects for the requested environment. Parse failures omit TOML
 source excerpts so malformed configuration values cannot enter diagnostics.
 Human and GitHub reports render configuration control characters visibly so
 Worker and binding names cannot inject terminal or workflow-command output.
+Queue producer bindings and consumer triggers are represented as queue edges;
+Wrangler documents their configuration in the [Queues configuration guide](https://developers.cloudflare.com/queues/configuration/configure-queues/).
 
 ## Development
 
