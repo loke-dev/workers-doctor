@@ -1813,6 +1813,7 @@ var ARRAY_BINDINGS = [
   { key: "pipelines", type: "pipeline", name: "binding", target: "stream" },
   { key: "ratelimits", type: "rate-limit", name: "name", target: "namespace_id" },
   { key: "vpc_services", type: "vpc-service", name: "binding", target: "service_id" },
+  { key: "tail_consumers", type: "tail-consumer", name: "service", target: "service" },
   { key: "send_email", type: "email", name: "name" },
   { key: "flagship", type: "flagship", name: "binding", target: "app_id" },
   { key: "secrets_store_secrets", type: "secret-store", name: "binding", target: "store_id" },
@@ -1827,6 +1828,7 @@ var OBJECT_BINDINGS = [
 ];
 var NON_STATE_BINDINGS = /* @__PURE__ */ new Set([
   "service",
+  "tail-consumer",
   ...OBJECT_BINDINGS.map((binding) => binding.type)
 ]);
 async function inspectStack(inputPath, options) {
@@ -2125,12 +2127,14 @@ function buildEdges(workers) {
 function diagnoseServices(workers, edges) {
   const names = new Set(workers.map((worker) => worker.name));
   const byName = new Map(workers.map((worker) => [worker.name, worker]));
-  return edges.filter((edge) => edge.label.startsWith("service:") && !names.has(edge.to)).map((edge) => {
+  return edges.filter(
+    (edge) => (edge.label.startsWith("service:") || edge.label.startsWith("tail-consumer:")) && !names.has(edge.to)
+  ).map((edge) => {
     const worker = byName.get(edge.from);
     return {
       rule: "WD006",
       severity: "warning",
-      title: "Service binding target is outside the stack",
+      title: "Worker target is outside the stack",
       message: `${edge.from} points to ${edge.to}, but no scanned Worker resolves to that name.`,
       file: worker?.configPath ?? "",
       worker: edge.from,

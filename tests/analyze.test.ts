@@ -210,6 +210,43 @@ describe('inspectStack', () => {
     expect(result.summary).toMatchObject({ bindings: 13, remoteBindings: 4 })
   })
 
+  it('recognizes tail consumers as worker targets without local-state warnings', async () => {
+    const temporary = await mkdtemp(join(tmpdir(), 'workers-doctor-tail-consumer-'))
+    try {
+      await writeFile(
+        join(temporary, 'wrangler.json'),
+        JSON.stringify({
+          name: 'producer',
+          tail_consumers: [{ service: 'tail-worker' }],
+          kv_namespaces: [{ binding: 'CACHE', id: 'remote-id', remote: true }],
+        }),
+      )
+
+      const result = await inspectStack(temporary, { recursive: true })
+
+      expect(result.workers[0]?.bindings).toContainEqual({
+        type: 'tail-consumer',
+        name: 'tail-worker',
+        target: 'tail-worker',
+        remote: false,
+      })
+      expect(result.edges).toContainEqual({
+        from: 'producer',
+        to: 'tail-worker',
+        label: 'tail-consumer:tail-worker',
+        remote: false,
+      })
+      expect(result.diagnostics).toContainEqual(
+        expect.objectContaining({ rule: 'WD006', severity: 'warning' }),
+      )
+      expect(result.diagnostics).not.toContainEqual(
+        expect.objectContaining({ rule: 'WD003' }),
+      )
+    } finally {
+      await rm(temporary, { recursive: true })
+    }
+  })
+
   it('maps the legacy pipeline target field', async () => {
     const temporary = await mkdtemp(join(tmpdir(), 'workers-doctor-pipeline-'))
     try {
