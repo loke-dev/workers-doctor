@@ -1,7 +1,7 @@
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
-import { join, resolve } from 'node:path'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { inspectStack, relativeResult } from '../src/analyze.js'
 import { ConfigError } from '../src/config.js'
@@ -155,13 +155,13 @@ describe('inspectStack', () => {
     }
   })
 
-  it('uses the configuration directory as root for a single file', async () => {
+  it('keeps reported paths relative to the scan root', async () => {
     const result = relativeResult(await inspectStack(
       `${fixtures}/healthy/apps/api/wrangler.jsonc`,
       { recursive: true },
     ))
 
-    expect(result.root).toBe(resolve(fixtures, 'healthy/apps/api'))
+    expect(result.root).toBe('.')
     expect(result.workers[0]?.configPath).toBe('wrangler.jsonc')
     expect(result.workers[0]?.directory).toBe('.')
   })

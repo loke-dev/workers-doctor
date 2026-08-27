@@ -2184,6 +2184,7 @@ function canonicalCycle(nodes) {
 function relativeResult(result) {
   return {
     ...result,
+    root: ".",
     workers: result.workers.map((worker) => ({
       ...worker,
       configPath: relative(result.root, worker.configPath) || worker.configPath,

@@ -499,6 +499,7 @@ function canonicalCycle(nodes: string[]): string {
 export function relativeResult(result: StackResult): StackResult {
   return {
     ...result,
+    root: '.',
     workers: result.workers.map((worker) => ({
       ...worker,
       configPath: relative(result.root, worker.configPath) || worker.configPath,
