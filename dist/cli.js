@@ -1818,7 +1818,8 @@ var ARRAY_BINDINGS = [
   { key: "flagship", type: "flagship", name: "binding", target: "app_id" },
   { key: "secrets_store_secrets", type: "secret-store", name: "binding", target: "store_id" },
   { key: "vpc_networks", type: "vpc-network", name: "binding" },
-  { key: "worker_loaders", type: "worker-loader", name: "binding" }
+  { key: "worker_loaders", type: "worker-loader", name: "binding" },
+  { key: "streaming_tail_consumers", type: "streaming-tail-consumer", name: "service", target: "service" }
 ];
 var OBJECT_BINDINGS = [
   { key: "vars", type: "var" },
@@ -1829,6 +1830,7 @@ var OBJECT_BINDINGS = [
 var NON_STATE_BINDINGS = /* @__PURE__ */ new Set([
   "service",
   "tail-consumer",
+  "streaming-tail-consumer",
   ...OBJECT_BINDINGS.map((binding) => binding.type)
 ]);
 async function inspectStack(inputPath, options) {
@@ -2128,7 +2130,7 @@ function diagnoseServices(workers, edges) {
   const names = new Set(workers.map((worker) => worker.name));
   const byName = new Map(workers.map((worker) => [worker.name, worker]));
   return edges.filter(
-    (edge) => (edge.label.startsWith("service:") || edge.label.startsWith("tail-consumer:")) && !names.has(edge.to)
+    (edge) => (edge.label.startsWith("service:") || edge.label.startsWith("tail-consumer:") || edge.label.startsWith("streaming-tail-consumer:")) && !names.has(edge.to)
   ).map((edge) => {
     const worker = byName.get(edge.from);
     return {

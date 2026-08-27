@@ -11,8 +11,9 @@ Inspect and safely run multi-Worker Cloudflare projects.
 
 Workers Doctor turns a directory of Wrangler files into one understandable
 development plan. It resolves the selected environment, maps service, tail
-consumer, and resource bindings, includes variables and legacy module bindings
-in collision checks, identifies local and remote state, checks secret names
+consumer, streaming tail consumer, and resource bindings, includes variables and
+legacy module bindings in collision checks, identifies local and remote state,
+checks secret names
 from local files and the process environment, and can start the stack only
 after the plan is visible.
 

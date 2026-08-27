@@ -218,6 +218,7 @@ describe('inspectStack', () => {
         JSON.stringify({
           name: 'producer',
           tail_consumers: [{ service: 'tail-worker' }],
+          streaming_tail_consumers: [{ service: 'streaming-tail-worker' }],
           kv_namespaces: [{ binding: 'CACHE', id: 'remote-id', remote: true }],
         }),
       )
@@ -236,9 +237,22 @@ describe('inspectStack', () => {
         label: 'tail-consumer:tail-worker',
         remote: false,
       })
+      expect(result.workers[0]?.bindings).toContainEqual({
+        type: 'streaming-tail-consumer',
+        name: 'streaming-tail-worker',
+        target: 'streaming-tail-worker',
+        remote: false,
+      })
+      expect(result.edges).toContainEqual({
+        from: 'producer',
+        to: 'streaming-tail-worker',
+        label: 'streaming-tail-consumer:streaming-tail-worker',
+        remote: false,
+      })
       expect(result.diagnostics).toContainEqual(
         expect.objectContaining({ rule: 'WD006', severity: 'warning' }),
       )
+      expect(result.diagnostics.filter((item) => item.rule === 'WD006')).toHaveLength(2)
       expect(result.diagnostics).not.toContainEqual(
         expect.objectContaining({ rule: 'WD003' }),
       )

@@ -49,6 +49,7 @@ const ARRAY_BINDINGS: Array<{
   { key: 'secrets_store_secrets', type: 'secret-store', name: 'binding', target: 'store_id' },
   { key: 'vpc_networks', type: 'vpc-network', name: 'binding' },
   { key: 'worker_loaders', type: 'worker-loader', name: 'binding' },
+  { key: 'streaming_tail_consumers', type: 'streaming-tail-consumer', name: 'service', target: 'service' },
 ]
 
 const OBJECT_BINDINGS = [
@@ -61,6 +62,7 @@ const OBJECT_BINDINGS = [
 const NON_STATE_BINDINGS = new Set([
   'service',
   'tail-consumer',
+  'streaming-tail-consumer',
   ...OBJECT_BINDINGS.map((binding) => binding.type),
 ])
 
@@ -428,7 +430,9 @@ function diagnoseServices(workers: WorkerProject[], edges: StackEdge[]): Diagnos
   const byName = new Map(workers.map((worker) => [worker.name, worker]))
   return edges
     .filter((edge) =>
-      (edge.label.startsWith('service:') || edge.label.startsWith('tail-consumer:'))
+      (edge.label.startsWith('service:')
+        || edge.label.startsWith('tail-consumer:')
+        || edge.label.startsWith('streaming-tail-consumer:'))
       && !names.has(edge.to),
     )
     .map((edge) => {
