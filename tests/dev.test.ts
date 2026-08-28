@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildDevCommands, runDevCommands } from '../src/dev.js'
+import { buildDevCommands, formatDevPlan, runDevCommands } from '../src/dev.js'
 import type { StackResult } from '../src/types.js'
 
 describe('runDevCommands', () => {
@@ -96,5 +96,23 @@ describe('runDevCommands', () => {
     await expect(buildDevCommands(result, 65535)).rejects.toThrow(
       'Port range 65535-65536 exceeds the maximum port 65535.',
     )
+  })
+})
+
+describe('formatDevPlan', () => {
+  it('renders configuration control characters visibly', () => {
+    const output = formatDevPlan([
+      {
+        worker: 'api\n\u001b[31mowned',
+        cwd: '/tmp/api',
+        command: process.execPath,
+        args: ['--label', 'value\t\u001b[32m'],
+        port: 8787,
+      },
+    ])
+
+    expect(output).toContain('api\\n\\u001b[31mowned')
+    expect(output).toContain("'value\\t\\u001b[32m'")
+    expect(output).not.toContain('\u001b')
   })
 })

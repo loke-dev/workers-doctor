@@ -2218,6 +2218,18 @@ function relativeResult(result) {
 import { spawn } from "child_process";
 import { access as access2 } from "fs/promises";
 import { dirname as dirname2, join } from "path";
+
+// src/text.ts
+function terminalText(value) {
+  return value.replace(/[\u0000-\u001f\u007f-\u009f]/g, (character) => {
+    if (character === "\n") return "\\n";
+    if (character === "\r") return "\\r";
+    if (character === "	") return "\\t";
+    return `\\u${character.charCodeAt(0).toString(16).padStart(4, "0")}`;
+  });
+}
+
+// src/dev.ts
 async function buildDevCommands(result, startPort) {
   const ordered = orderWorkers(result);
   if (ordered.length > 0 && startPort + ordered.length - 1 > 65535) {
@@ -2291,7 +2303,7 @@ function orderWorkers(result) {
 function formatDevPlan(commands) {
   const lines = ["Development plan", ""];
   for (const item of commands) {
-    lines.push(`${item.worker.padEnd(24)} http://localhost:${item.port}`);
+    lines.push(`${terminalText(item.worker).padEnd(24)} http://localhost:${item.port}`);
     lines.push(`  ${shellCommand(item.command, item.args)}`);
   }
   return `${lines.join("\n")}
@@ -2355,7 +2367,7 @@ async function runDevCommands(commands, shutdownGraceMs = 5e3) {
   });
 }
 function shellCommand(command, args) {
-  return [command, ...args].map(quote).join(" ");
+  return [command, ...args].map((value) => quote(terminalText(value))).join(" ");
 }
 function quote(value) {
   return /^[A-Za-z0-9_./:@=-]+$/.test(value) ? value : `'${value.replaceAll("'", "'\\''")}'`;
@@ -2560,14 +2572,6 @@ function dotEscape(value) {
     if (character === "\r") return "\\r";
     if (character === "	") return "\\t";
     return "";
-  });
-}
-function terminalText(value) {
-  return value.replace(/[\u0000-\u001f\u007f-\u009f]/g, (character) => {
-    if (character === "\n") return "\\n";
-    if (character === "\r") return "\\r";
-    if (character === "	") return "\\t";
-    return `\\u${character.charCodeAt(0).toString(16).padStart(4, "0")}`;
   });
 }
 

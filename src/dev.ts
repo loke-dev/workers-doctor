@@ -1,6 +1,7 @@
 import { spawn, type ChildProcess } from 'node:child_process'
 import { access } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
+import { terminalText } from './text.js'
 import type { StackResult, WorkerProject } from './types.js'
 
 export interface DevCommand {
@@ -100,7 +101,7 @@ function orderWorkers(result: StackResult): WorkerProject[] {
 export function formatDevPlan(commands: DevCommand[]): string {
   const lines = ['Development plan', '']
   for (const item of commands) {
-    lines.push(`${item.worker.padEnd(24)} http://localhost:${item.port}`)
+    lines.push(`${terminalText(item.worker).padEnd(24)} http://localhost:${item.port}`)
     lines.push(`  ${shellCommand(item.command, item.args)}`)
   }
   return `${lines.join('\n')}\n`
@@ -174,7 +175,7 @@ export async function runDevCommands(
 }
 
 function shellCommand(command: string, args: string[]): string {
-  return [command, ...args].map(quote).join(' ')
+  return [command, ...args].map((value) => quote(terminalText(value))).join(' ')
 }
 
 function quote(value: string): string {
