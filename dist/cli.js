@@ -2616,7 +2616,7 @@ async function main() {
     const message = error instanceof Error ? error.message : String(error);
     if (wantsJson(args)) process.stdout.write(`${JSON.stringify({ error: message }, null, 2)}
 `);
-    else process.stderr.write(`Workers Doctor: ${message}
+    else process.stderr.write(`Workers Doctor: ${terminalText(message)}
 `);
     process.exitCode = error instanceof ConfigError || error instanceof CliArgumentError ? 1 : 2;
   }

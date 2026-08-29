@@ -7,6 +7,7 @@ import { ConfigError } from './config.js'
 import { buildDevCommands, formatDevPlan, runDevCommands } from './dev.js'
 import { CliArgumentError, parseArgs, wantsJson } from './options.js'
 import { formatDot, formatGitHub, formatHuman } from './report.js'
+import { terminalText } from './text.js'
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2)
@@ -57,7 +58,7 @@ async function main(): Promise<void> {
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
     if (wantsJson(args)) process.stdout.write(`${JSON.stringify({ error: message }, null, 2)}\n`)
-    else process.stderr.write(`Workers Doctor: ${message}\n`)
+    else process.stderr.write(`Workers Doctor: ${terminalText(message)}\n`)
     process.exitCode = error instanceof ConfigError || error instanceof CliArgumentError ? 1 : 2
   }
 }
