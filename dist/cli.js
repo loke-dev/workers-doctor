@@ -2417,6 +2417,10 @@ function parseArgs(args) {
     if (!argument) continue;
     if (argument === "--env" || argument === "-e") {
       environment = requiredValue(values, ++index, argument);
+    } else if (argument.startsWith("--env=")) {
+      environment = requiredInlineValue(argument.slice("--env=".length), "--env");
+    } else if (argument.startsWith("-e=")) {
+      environment = requiredInlineValue(argument.slice("-e=".length), "-e");
     } else if (argument === "--format") {
       const value = requiredValue(values, ++index, argument);
       if (!FORMATS.has(value)) {
@@ -2481,6 +2485,12 @@ function parseArgs(args) {
 }
 function requiredValue(args, index, option) {
   const value = args[index];
+  if (!value || value.startsWith("-")) {
+    throw new CliArgumentError(`${option} requires a value.`);
+  }
+  return value;
+}
+function requiredInlineValue(value, option) {
   if (!value || value.startsWith("-")) {
     throw new CliArgumentError(`${option} requires a value.`);
   }

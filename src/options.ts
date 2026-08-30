@@ -39,6 +39,10 @@ export function parseArgs(args: string[]): CliOptions {
 
     if (argument === '--env' || argument === '-e') {
       environment = requiredValue(values, ++index, argument)
+    } else if (argument.startsWith('--env=')) {
+      environment = requiredInlineValue(argument.slice('--env='.length), '--env')
+    } else if (argument.startsWith('-e=')) {
+      environment = requiredInlineValue(argument.slice('-e='.length), '-e')
     } else if (argument === '--format') {
       const value = requiredValue(values, ++index, argument) as OutputFormat
       if (!FORMATS.has(value)) {
@@ -106,6 +110,13 @@ export function parseArgs(args: string[]): CliOptions {
 
 function requiredValue(args: string[], index: number, option: string): string {
   const value = args[index]
+  if (!value || value.startsWith('-')) {
+    throw new CliArgumentError(`${option} requires a value.`)
+  }
+  return value
+}
+
+function requiredInlineValue(value: string, option: string): string {
   if (!value || value.startsWith('-')) {
     throw new CliArgumentError(`${option} requires a value.`)
   }

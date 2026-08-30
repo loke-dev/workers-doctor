@@ -10,6 +10,8 @@ describe('parseArgs', () => {
       format: 'json',
       strict: true,
     })
+    expect(parseArgs(['inspect', '--env=staging'])).toMatchObject({ environment: 'staging' })
+    expect(parseArgs(['inspect', '-e=staging'])).toMatchObject({ environment: 'staging' })
   })
 
   it('selects dot output for graph', () => {
