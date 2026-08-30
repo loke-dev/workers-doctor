@@ -155,6 +155,36 @@ describe('inspectStack', () => {
     }
   })
 
+  it('does not use dotenv files when Wrangler disables dotenv loading', async () => {
+    const temporary = await mkdtemp(join(tmpdir(), 'workers-doctor-dotenv-disabled-'))
+    const previous = process.env.CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV
+    const secretName = 'WORKERS_DOCTOR_DOTENV_DISABLED_SECRET'
+    try {
+      await writeFile(
+        join(temporary, 'wrangler.json'),
+        JSON.stringify({
+          name: 'dotenv-disabled-worker',
+          secrets: { required: [secretName] },
+        }),
+      )
+      await writeFile(join(temporary, '.env'), `${secretName}=ignored-value\n`)
+      process.env.CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV = 'false'
+
+      const result = await inspectStack(temporary, { recursive: true })
+
+      expect(result.diagnostics).toContainEqual(
+        expect.objectContaining({ rule: 'WD005', severity: 'warning' }),
+      )
+      expect(result.diagnostics).not.toContainEqual(
+        expect.objectContaining({ rule: 'WD004' }),
+      )
+    } finally {
+      if (previous === undefined) delete process.env.CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV
+      else process.env.CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV = previous
+      await rm(temporary, { recursive: true })
+    }
+  })
+
   it('keeps reported paths relative to the scan root', async () => {
     const result = relativeResult(await inspectStack(
       `${fixtures}/healthy/apps/api/wrangler.jsonc`,

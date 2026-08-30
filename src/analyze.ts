@@ -400,10 +400,11 @@ async function inspectSecretFiles(
   const devFile = devCandidates.find((name) => names.includes(name))
   const envFiles = envCandidates.filter((name) => names.includes(name))
   const keys = new Set<string>()
+  const loadDotEnv = process.env.CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV !== 'false'
 
   if (devFile) {
     addDotEnvKeys(keys, await readFile(resolve(directory, devFile), 'utf8'))
-  } else {
+  } else if (loadDotEnv) {
     for (const file of envFiles.reverse()) {
       addDotEnvKeys(keys, await readFile(resolve(directory, file), 'utf8'))
     }
@@ -414,7 +415,7 @@ async function inspectSecretFiles(
 
   return {
     hasDevVars: Boolean(devFile),
-    hasEnv: envFiles.length > 0,
+    hasEnv: loadDotEnv && envFiles.length > 0,
     missing: required.filter((name) => !keys.has(name)),
   }
 }

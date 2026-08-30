@@ -104,7 +104,8 @@ from the selected repository tag without downloading executable code from npm.
 
 Secret values are never reported. `inspect`, `graph`, and CI output are fully
 offline and require no Cloudflare account. Secret-file checks consider only the
-files Wrangler selects for the requested environment. Parse failures omit TOML
+files Wrangler selects for the requested environment, including the
+`CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV=false` override. Parse failures omit TOML
 source excerpts so malformed configuration values cannot enter diagnostics.
 Human, development-plan, and GitHub reports render configuration control
 characters visibly so Worker and binding names cannot inject terminal or
