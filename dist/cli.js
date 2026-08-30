@@ -1834,6 +1834,7 @@ var NON_STATE_BINDINGS = /* @__PURE__ */ new Set([
   "queue-consumer",
   ...OBJECT_BINDINGS.map((binding) => binding.type)
 ]);
+var NON_RUNTIME_BINDINGS = /* @__PURE__ */ new Set(["tail-consumer", "streaming-tail-consumer", "queue-consumer"]);
 async function inspectStack(inputPath, options) {
   const input = resolve2(inputPath);
   let inputInfo;
@@ -1907,6 +1908,7 @@ function diagnoseDuplicateBindings(workers) {
   return workers.flatMap((worker) => {
     const counts = /* @__PURE__ */ new Map();
     for (const binding of worker.bindings) {
+      if (NON_RUNTIME_BINDINGS.has(binding.type)) continue;
       counts.set(binding.name, (counts.get(binding.name) ?? 0) + 1);
     }
     return [...counts.entries()].filter(([, count]) => count > 1).map(([name, count]) => ({

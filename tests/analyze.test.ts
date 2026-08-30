@@ -395,4 +395,31 @@ describe('inspectStack', () => {
       await rm(temporary, { recursive: true })
     }
   })
+
+  it('does not treat trigger targets as duplicate runtime bindings', async () => {
+    const temporary = await mkdtemp(join(tmpdir(), 'workers-doctor-trigger-names-'))
+    try {
+      await writeFile(
+        join(temporary, 'wrangler.json'),
+        JSON.stringify({
+          name: 'trigger-overlap',
+          services: [{ binding: 'tail-worker', service: 'tail-worker' }],
+          tail_consumers: [{ service: 'tail-worker' }],
+          streaming_tail_consumers: [{ service: 'tail-worker' }],
+          queues: {
+            producers: [{ binding: 'events', queue: 'events' }],
+            consumers: [{ queue: 'events' }],
+          },
+        }),
+      )
+
+      const result = await inspectStack(temporary, { recursive: true })
+
+      expect(result.diagnostics).not.toContainEqual(
+        expect.objectContaining({ rule: 'WD009' }),
+      )
+    } finally {
+      await rm(temporary, { recursive: true })
+    }
+  })
 })

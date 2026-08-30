@@ -100,7 +100,7 @@ from the selected repository tag without downloading executable code from npm.
 | `WD006` | Service and tail-consumer targets resolve inside the scanned stack |
 | `WD007` | Service binding cycles, including self-cycles, are visible |
 | `WD008` | Effective Worker names are unique inside the scanned stack |
-| `WD009` | Binding names are unique inside each Worker |
+| `WD009` | Runtime binding names are unique inside each Worker |
 
 Secret values are never reported. `inspect`, `graph`, and CI output are fully
 offline and require no Cloudflare account. Secret-file checks consider only the
@@ -111,6 +111,8 @@ characters visibly so Worker and binding names cannot inject terminal or
 workflow-command output.
 Queue producer bindings and consumer triggers are represented as queue edges;
 Wrangler documents their configuration in the [Queues configuration guide](https://developers.cloudflare.com/queues/configuration/configure-queues/).
+Trigger targets from queue consumers and tail consumers are graph edges rather
+than runtime bindings, so their names do not count toward `WD009` collisions.
 
 ## Development
 

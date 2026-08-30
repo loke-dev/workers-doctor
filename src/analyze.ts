@@ -67,6 +67,8 @@ const NON_STATE_BINDINGS = new Set([
   ...OBJECT_BINDINGS.map((binding) => binding.type),
 ])
 
+const NON_RUNTIME_BINDINGS = new Set(['tail-consumer', 'streaming-tail-consumer', 'queue-consumer'])
+
 export async function inspectStack(
   inputPath: string,
   options: InspectOptions,
@@ -156,6 +158,7 @@ function diagnoseDuplicateBindings(workers: WorkerProject[]): Diagnostic[] {
   return workers.flatMap((worker) => {
     const counts = new Map<string, number>()
     for (const binding of worker.bindings) {
+      if (NON_RUNTIME_BINDINGS.has(binding.type)) continue
       counts.set(binding.name, (counts.get(binding.name) ?? 0) + 1)
     }
     return [...counts.entries()]
